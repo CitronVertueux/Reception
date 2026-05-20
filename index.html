@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanders Euralis – Réception Matières Premières</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --rouge:#C8102E;--rouge-l:#fdf0f2;--rouge-m:#f5c6cd;
+  --vert:#2E7D32;--vert-l:#f0f7f0;--vert-m:#a8d5aa;--vert-d:#1b5e20;
+  --orange:#D97706;--orange-l:#FFF7E6;
+  --blue:#2563EB;--blue-l:#EFF6FF;
+  --bg:#F8F6F2;--white:#FFF;
+  --text:#1E1E1E;--soft:#6B7280;--muted:#9CA3AF;
+  --border:#E8E4DE;--border-s:#F0EDE8;
+  --sh-sm:0 1px 4px rgba(0,0,0,.05);--sh:0 2px 16px rgba(0,0,0,.07);--sh-lg:0 8px 40px rgba(0,0,0,.11);
+  --r:12px;--rs:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+
+.loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.loader-overlay.hidden{display:none;}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--vert);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-text{font-size:13px;color:var(--soft);}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;}
+.toast.success{background:var(--vert);}
+.toast.error{background:var(--rouge);}
+
+.page{display:none;min-height:100vh;flex-direction:column;}
+.page.active{display:flex;}
+
+/* ACCUEIL */
+#pg-home{background:var(--white);align-items:center;justify-content:center;padding:40px 24px;}
+.home-wrap{width:100%;max-width:460px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+.home-logos{display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:40px;}
+.home-logos img{height:38px;object-fit:contain;}
+.home-logos-sep{width:1px;height:30px;background:var(--border);}
+.home-wrap h1{font-family:'Lora',serif;font-size:26px;font-weight:600;line-height:1.3;margin-bottom:12px;}
+.home-wrap h1 em{font-style:normal;color:var(--vert);}
+.home-divider{width:44px;height:2px;background:linear-gradient(90deg,var(--rouge),var(--vert));border-radius:2px;margin:14px 0 20px;}
+.home-wrap p{font-size:14.5px;color:var(--soft);line-height:1.75;margin-bottom:36px;}
+.home-infos{display:flex;width:100%;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:32px;background:var(--bg);}
+.hi{flex:1;padding:16px 10px;text-align:center;border-right:1px solid var(--border);}
+.hi:last-child{border-right:none;}
+.hiv{font-size:15px;font-weight:700;margin-bottom:4px;}
+.hil{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.7px;font-weight:500;}
+.btn-home{width:100%;background:var(--vert);color:#fff;border:none;padding:14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .18s,transform .12s;box-shadow:0 3px 14px rgba(46,125,50,.3);margin-bottom:14px;}
+.btn-home:hover{background:var(--vert-d);transform:translateY(-1px);}
+.home-note{font-size:12px;color:var(--muted);line-height:1.6;}
+.home-note a{color:var(--vert);text-decoration:none;font-weight:500;}
+
+/* LOGIN */
+#pg-login{background:var(--bg);align-items:center;justify-content:center;padding:40px 24px;}
+.login-wrap{width:100%;max-width:390px;}
+.login-card{background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-lg);overflow:hidden;}
+.login-top{padding:26px 30px 22px;border-bottom:1px solid var(--border);text-align:center;}
+.l-logos{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px;}
+.l-logos img{height:26px;object-fit:contain;}
+.l-logos-sep{width:1px;height:20px;background:var(--border);}
+.login-top h2{font-family:'Lora',serif;font-size:18px;font-weight:600;margin-bottom:3px;}
+.login-top p{font-size:13px;color:var(--soft);}
+.login-body{padding:24px 30px;display:flex;flex-direction:column;gap:14px;}
+.lg{display:flex;flex-direction:column;gap:5px;}
+.lg label{font-size:13px;font-weight:500;}
+.lg input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--bg);outline:none;color:var(--text);transition:border-color .18s,box-shadow .18s;}
+.lg input:focus{border-color:var(--vert);background:#fff;box-shadow:0 0 0 3px rgba(46,125,50,.1);}
+.login-err{background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:var(--rs);padding:9px 13px;font-size:13px;color:var(--rouge);display:none;}
+.login-err.show{display:block;}
+.btn-login{background:var(--vert);color:#fff;border:none;padding:12px;border-radius:var(--rs);width:100%;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .18s;box-shadow:0 2px 10px rgba(46,125,50,.22);margin-top:4px;}
+.btn-login:hover{background:var(--vert-d);}
+.login-back{padding:0 30px 20px;text-align:center;}
+.login-back button{background:none;border:none;color:var(--soft);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+.login-back button:hover{color:var(--vert);}
+
+/* DASHBOARD */
+#pg-dash{background:var(--bg);}
+.dash-nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 22px;position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm);}
+.dash-nav-in{display:flex;align-items:center;justify-content:space-between;height:56px;max-width:1400px;margin:0 auto;width:100%;}
+.d-logos{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.d-logos img{height:22px;object-fit:contain;}
+.d-logos-sep{width:1px;height:18px;background:var(--border);}
+.d-tabs{display:flex;align-items:center;gap:1px;overflow-x:auto;scrollbar-width:none;}
+.d-tabs::-webkit-scrollbar{display:none;}
+.d-tab{padding:6px 11px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--soft);transition:background .15s,color .15s;white-space:nowrap;flex-shrink:0;}
+.d-tab:hover{background:var(--bg);color:var(--text);}
+.d-tab.active{background:var(--vert-l);color:var(--vert);font-weight:600;}
+.d-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;}
+.u-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.u-name{font-weight:600;font-size:12.5px;line-height:1.2;}
+.u-role{font-size:10.5px;color:var(--soft);}
+.btn-out{background:none;border:1.5px solid var(--border);color:var(--soft);padding:5px 11px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;transition:border-color .15s,color .15s;}
+.btn-out:hover{border-color:var(--rouge);color:var(--rouge);}
+.dash-body{flex:1;padding:22px;max-width:1400px;width:100%;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* COMPOSANTS */
+.pg-h{margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.pg-h h2{font-family:'Lora',serif;font-size:20px;font-weight:600;margin-bottom:2px;}
+.pg-h p{font-size:13px;color:var(--soft);}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.sc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:15px 16px;box-shadow:var(--sh-sm);position:relative;overflow:hidden;}
+.sc::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
+.sc.vert::before{background:var(--vert);}
+.sc.rouge::before{background:var(--rouge);}
+.sc.orange::before{background:var(--orange);}
+.sc.blue::before{background:var(--blue);}
+.sc-lbl{font-size:11px;color:var(--soft);font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.sc-val{font-family:'Lora',serif;font-size:22px;font-weight:600;line-height:1;}
+.sc-sub{font-size:11.5px;color:var(--soft);margin-top:3px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:16px;}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.card-h h3{font-size:13.5px;font-weight:600;}
+.card-body{padding:16px;}
+.card-foot{padding:11px 16px;border-top:1px solid var(--border);background:#FAFAF8;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{padding:8px 13px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--soft);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody tr{border-bottom:1px solid var(--border-s);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#fafaf8;}
+tbody td{padding:10px 13px;vertical-align:middle;}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+.bg{background:var(--vert-l);color:var(--vert);}
+.bo{background:var(--orange-l);color:var(--orange);}
+.bb{background:var(--blue-l);color:var(--blue);}
+.br{background:var(--rouge-l);color:var(--rouge);}
+.bgy{background:#F3F4F6;color:#6B7280;}
+.btn-p{background:var(--vert);color:#fff;border:none;padding:8px 16px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .18s;box-shadow:0 2px 8px rgba(46,125,50,.2);}
+.btn-p:hover{background:var(--vert-d);}
+.btn-p.sm{padding:6px 12px;font-size:12px;}
+.btn-p.rouge{background:var(--rouge);}
+.btn-s{background:none;border:1.5px solid var(--border);padding:7px 14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--soft);transition:border-color .18s,color .18s;}
+.btn-s:hover{border-color:var(--vert);color:var(--vert);}
+.btn-s.sm{padding:5px 10px;font-size:12px;}
+.abtn{background:none;border:1.5px solid var(--border);border-radius:6px;padding:3px 9px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;color:var(--soft);transition:all .15s;margin-right:3px;}
+.abtn:hover{border-color:var(--vert);color:var(--vert);}
+.abtn.del:hover{border-color:var(--rouge);color:var(--rouge);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.fgrp{display:flex;flex-direction:column;gap:5px;}
+.fgrp label{font-size:12.5px;font-weight:500;}
+.req{color:var(--rouge);}
+.fgrp input,.fgrp select,.fgrp textarea{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);outline:none;color:var(--text);transition:border-color .18s,box-shadow .18s;appearance:none;}
+.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{border-color:var(--vert);background:#fff;box-shadow:0 0 0 3px rgba(46,125,50,.1);}
+.fgrp input[readonly]{background:#F3F4F6;color:var(--soft);}
+.fgrp select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;background-color:var(--bg);cursor:pointer;}
+.fgrp textarea{resize:vertical;min-height:70px;}
+.fsect{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:12px;margin-top:4px;}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dr{background:var(--rouge);}
+.dv{background:var(--vert);}
+.f-input{padding:7px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);outline:none;color:var(--text);transition:border-color .18s;}
+.f-input:focus{border-color:var(--vert);}
+.f-sel{padding:7px 28px 7px 11px;border:1.5px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--bg);outline:none;color:var(--text);appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;transition:border-color .18s;}
+.f-sel:focus{border-color:var(--vert);}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh-sm);}
+.chart-card h3{font-size:13px;font-weight:600;margin-bottom:12px;}
+.chart-wrap{position:relative;height:190px;}
+.comments-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;}
+.comment{background:var(--bg);border-radius:8px;padding:9px 12px;}
+.comment-h{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.cav{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;}
+.c-name{font-size:12px;font-weight:600;}
+.c-date{font-size:11px;color:var(--muted);}
+.c-text{font-size:12.5px;color:var(--soft);line-height:1.5;}
+.av-sm{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;vertical-align:middle;margin-right:6px;}
+.mat-color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;flex-shrink:0;}
+.empty{padding:32px;text-align:center;color:var(--soft);font-size:13px;}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-ov.show{display:flex;animation:fi .22s ease;}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal-box{background:#fff;border-radius:14px;padding:26px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.14);animation:su .25s ease;max-height:90vh;overflow-y:auto;}
+.modal-box.wide{max-width:620px;}
+@keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-box h3{font-family:'Lora',serif;font-size:17px;font-weight:600;margin-bottom:6px;}
+.modal-box .m-desc{font-size:13px;color:var(--soft);margin-bottom:16px;line-height:1.6;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.m-cancel{background:none;border:1.5px solid var(--border);padding:7px 15px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--soft);}
+.m-ok{background:var(--vert);color:#fff;border:none;padding:8px 16px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.m-ok:hover{background:var(--vert-d);}
+.m-ok.danger{background:var(--rouge);}
+
+/* BOTTOM NAV */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:150;box-shadow:0 -2px 12px rgba(0,0,0,.08);}
+.bottom-nav-inner{display:flex;align-items:stretch;}
+.bn-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:7px 2px 8px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;color:var(--soft);cursor:pointer;transition:color .15s;}
+.bn-tab.active{color:var(--vert);}
+.bn-tab-icon{font-size:19px;line-height:1;}
+.bn-tab-label{font-size:10px;white-space:nowrap;overflow:hidden;max-width:58px;text-overflow:ellipsis;}
+
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .charts-grid{grid-template-columns:1fr;}
+  .frow{grid-template-columns:1fr;}
+  .d-tabs{display:none !important;}
+  .dash-body{padding:12px 12px 76px;}
+  .bottom-nav{display:block !important;}
+  .dash-nav{padding:0 14px;}
+  .dash-nav-in{height:52px;}
+  .d-logos img{height:20px;}
+  .user-chip .u-role{display:none;}
+  .u-name{font-size:12px;}
+  .btn-out{padding:5px 10px;font-size:12px;}
+  .card-h{padding:10px 14px;}
+  .card-body{padding:12px;}
+  .card-foot{padding:10px 14px;}
+  tbody td{padding:9px 11px;font-size:12.5px;}
+  thead th{padding:7px 11px;}
+  .pg-h h2{font-size:18px;}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .modal-box{padding:20px;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-width:100%;max-height:88vh;margin:0;}
+  .modal-ov{align-items:flex-end;}
+}
+@media(max-width:480px){.d-right .user-chip{display:none;}}
+</style>
+</head>
+<body>
+<div class="loader-overlay" id="loader"><div class="spinner"></div><div class="loader-text">Chargement…</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ACCUEIL -->
+<div id="pg-home" class="page active">
+  <div class="home-wrap">
+    <div class="home-logos">
+      <img src="https://www.sanders.fr/wp-content/themes/sanders/dist/assets/logo-header-lv8jqXRJ.svg" alt="Sanders" onerror="this.style.display='none'">
+      <div class="home-logos-sep"></div>
+      <img src="https://www.euralis.fr/wp-content/uploads/2021/09/logo.png" alt="Euralis" onerror="this.style.display='none'">
+    </div>
+    <h1>Réception<br><em>Matières Premières</em></h1>
+    <div class="home-divider"></div>
+    <p>Portail de gestion des rendez-vous de livraison.<br>Site de <strong>Vic-en-Bigorre</strong> — Hautes-Pyrénées.</p>
+    <div class="home-infos">
+      <div class="hi"><div class="hiv">6h–18h</div><div class="hil">Réception</div></div>
+      <div class="hi"><div class="hiv">Lun–Sam</div><div class="hil">Ouvert</div></div>
+      <div class="hi"><div class="hiv">24h</div><div class="hil">Confirmation</div></div>
+    </div>
+    <button class="btn-home" onclick="showPage('login')">Accéder à l'espace privé →</button>
+    <div class="home-note">📍 193 Impasse Lautrec, 65500 Vic-en-Bigorre &nbsp;·&nbsp; <a href="tel:0562380000">05 62 38 XX XX</a></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="pg-login" class="page">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-top">
+        <div class="l-logos">
+          <img src="https://www.sanders.fr/wp-content/themes/sanders/dist/assets/logo-header-lv8jqXRJ.svg" alt="Sanders" onerror="this.style.display='none'">
+          <div class="l-logos-sep"></div>
+          <img src="https://www.euralis.fr/wp-content/uploads/2021/09/logo.png" alt="Euralis" onerror="this.style.display='none'">
+        </div>
+        <h2>Connexion</h2>
+        <p>Réception Matières Premières — Vic-en-Bigorre</p>
+      </div>
+      <div class="login-body">
+        <div class="login-err" id="l-err"></div>
+        <div class="lg"><label>Email</label><input type="email" id="l-email" placeholder="votre@email.fr" autocomplete="email"></div>
+        <div class="lg"><label>Mot de passe</label><input type="password" id="l-pwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn-login" id="btn-login-submit" onclick="doLogin()">Se connecter</button>
+      </div>
+      <div class="login-back"><button onclick="showPage('home')">← Retour à l'accueil</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="pg-dash" class="page">
+  <nav class="dash-nav">
+    <div class="dash-nav-in">
+      <div class="d-logos">
+        <img src="https://www.sanders.fr/wp-content/themes/sanders/dist/assets/logo-header-lv8jqXRJ.svg" alt="Sanders" onerror="this.style.display='none'">
+        <div class="d-logos-sep"></div>
+        <img src="https://www.euralis.fr/wp-content/uploads/2021/09/logo.png" alt="Euralis" onerror="this.style.display='none'">
+      </div>
+      <div class="d-tabs" id="d-tabs"></div>
+      <div class="d-right">
+        <div class="user-chip"><div class="u-av" id="d-av"></div><div><div class="u-name" id="d-name"></div><div class="u-role" id="d-role-lbl"></div></div></div>
+        <button class="btn-out" onclick="doLogout()">Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+  <div class="dash-body" id="dash-body"></div>
+</div>
+
+<div class="bottom-nav" id="bottom-nav"><div class="bottom-nav-inner" id="bn-inner"></div></div>
+
+<div class="modal-ov" id="modal">
+  <div class="modal-box" id="modal-box">
+    <h3 id="m-title"></h3><p class="m-desc" id="m-desc"></p>
+    <div id="m-content"></div>
+    <div class="modal-actions">
+      <button class="m-cancel" id="m-cancel" onclick="closeModal()">Annuler</button>
+      <button class="m-ok" id="m-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://qnoaclsvbuelzbmpsdib.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFub2FjbHN2YnVlbHpibXBzZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNjE3NDUsImV4cCI6MjA5NDgzNzc0NX0.MeEGe77mVVGO--BvUGglKfH_NkFV2gbRY6GupX0sl6c';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const ROLE_FR={admin:'Administrateur',responsable:'Responsable',employe:'Employé',transporteur:'Transporteur',chauffeur:'Chauffeur'};
+const ROLE_BADGE={admin:'br',responsable:'bo',employe:'bb',transporteur:'bg',chauffeur:'bgy'};
+const CRENEAUX=['06:00–08:00','08:00–10:00','10:00–12:00','12:00–14:00','14:00–16:00','16:00–18:00'];
+const MAX_PAR_CRENEAU=3;
+const fmt=d=>d.toISOString().split('T')[0];
+const now=new Date();
+const todayStr=fmt(now);
+const ST={attente:{lbl:'En attente',cls:'bo'},planifie:{lbl:'Planifié',cls:'bb'},confirme:{lbl:'Confirmé',cls:'bg'},termine:{lbl:'Terminé',cls:'bgy'},annule:{lbl:'Annulé',cls:'br'}};
+
+const TABS={
+  admin:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'},{id:'slots',lbl:'🗓 Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'settings',lbl:'⚙️ Paramètres'}],
+  responsable:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'},{id:'slots',lbl:'🗓 Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
+  employe:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'}],
+  transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau RDV'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
+  chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau RDV'},{id:'hist',lbl:'📁 Historique'}],
+};
+const BN_TABS={
+  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'slots',icon:'🗓',lbl:'Créneaux'},{id:'matieres',icon:'🌾',lbl:'Matières'},{id:'users',icon:'👥',lbl:'Comptes'}],
+  responsable:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'slots',icon:'🗓',lbl:'Créneaux'},{id:'matieres',icon:'🌾',lbl:'Matières'},{id:'hist',icon:'📁',lbl:'Histo'}],
+  employe:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'hist',icon:'📁',lbl:'Histo'}],
+  transporteur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'drivers',icon:'👷',lbl:'Chauffeurs'},{id:'hist',icon:'📁',lbl:'Histo'}],
+  chauffeur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'hist',icon:'📁',lbl:'Histo'}],
+};
+
+let cu=null,cuP=null,cv=null,charts={};
+let MATIERES=[],INCOMPATS=[],RDV=[],BLOCKED=[],SLOTS_MAT=[],USERS=[];
+
+// UI
+function showLoader(t='Chargement…'){document.getElementById('loader').classList.remove('hidden');document.querySelector('.loader-text').textContent=t;}
+function hideLoader(){document.getElementById('loader').classList.add('hidden');}
+let toastTimer;
+function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast show ${type}`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
+function showPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));document.getElementById('pg-'+p).classList.add('active');window.scrollTo(0,0);}
+function bst(s){const st=ST[s]||ST.attente;return`<span class="badge ${st.cls}">${st.lbl}</span>`;}
+function brol(r){return`<span class="badge ${ROLE_BADGE[r]||'bgy'}">${ROLE_FR[r]}</span>`;}
+function matById(id){return MATIERES.find(m=>m.id===id);}
+function matDot(id){const m=matById(id);return m?`<span class="mat-color-dot" style="background:${m.couleur}"></span>`:'';}
+function areIncompat(a,b){return INCOMPATS.some(i=>(i.matiere_a===a&&i.matiere_b===b)||(i.matiere_a===b&&i.matiere_b===a));}
+function slotCount(date,creneau){return RDV.filter(r=>r.date===date&&r.creneau===creneau&&r.statut!=='annule').length;}
+function isBlocked(date,creneau){return BLOCKED.some(b=>b.date===date&&b.creneau===creneau);}
+function slotReservedFor(date,creneau){const s=SLOTS_MAT.find(s=>s.date===date&&s.creneau===creneau);return s?s.matiere_id:null;}
+function lastMatiereBeforeSlot(date,creneau){
+  const crIdx=CRENEAUX.indexOf(creneau);
+  const all=RDV.filter(r=>r.statut!=='annule'&&(r.date<date||(r.date===date&&CRENEAUX.indexOf(r.creneau)<crIdx))).sort((a,b)=>a.date.localeCompare(b.date)||CRENEAUX.indexOf(a.creneau)-CRENEAUX.indexOf(b.creneau));
+  return all.length?all[all.length-1].matiere_id:null;
+}
+function checkSlot(date,creneau,matId){
+  if(isBlocked(date,creneau))return{ok:false};
+  if(slotCount(date,creneau)>=MAX_PAR_CRENEAU)return{ok:false};
+  const res=slotReservedFor(date,creneau);
+  if(res&&res!==matId)return{ok:false};
+  const last=lastMatiereBeforeSlot(date,creneau);
+  if(last&&areIncompat(last,matId))return{ok:false};
+  return{ok:true};
+}
+function myRdvs(){
+  let l=[...RDV].sort((a,b)=>a.date.localeCompare(b.date)||a.creneau.localeCompare(b.creneau));
+  if(cuP?.role==='chauffeur')l=l.filter(r=>r.user_id===cu.id);
+  if(cuP?.role==='transporteur')l=l.filter(r=>r.transporteur===cuP.entreprise||r.user_id===cu.id);
+  return l;
+}
+
+// AUTH
+async function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pwd=document.getElementById('l-pwd').value;
+  const err=document.getElementById('l-err');
+  const btn=document.getElementById('btn-login-submit');
+  err.classList.remove('show');
+  btn.textContent='Connexion…';btn.disabled=true;
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
+  btn.textContent='Se connecter';btn.disabled=false;
+  if(error){err.textContent='Email ou mot de passe incorrect.';err.classList.add('show');return;}
+  cu=data.user;
+  await loadProfil();
+  await loadAllData();
+  buildDash();
+  showPage('dash');
+}
+async function loadProfil(){const{data}=await sb.from('profils').select('*').eq('id',cu.id).single();cuP=data;}
+async function doLogout(){await sb.auth.signOut();cu=null;cuP=null;cv=null;showPage('home');}
+
+// DATA
+async function loadAllData(){
+  showLoader('Chargement des données…');
+  const[m,inc,rdv,blk,slm,usr]=await Promise.all([
+    sb.from('matieres').select('*').order('categorie').order('nom'),
+    sb.from('incompatibilites').select('*'),
+    sb.from('rdv').select('*').order('date').order('creneau'),
+    sb.from('creneaux_bloques').select('*'),
+    sb.from('creneaux_matieres').select('*'),
+    sb.from('profils').select('*'),
+  ]);
+  MATIERES=m.data||[];INCOMPATS=inc.data||[];RDV=rdv.data||[];
+  BLOCKED=blk.data||[];SLOTS_MAT=slm.data||[];USERS=usr.data||[];
+  hideLoader();
+}
+async function reloadRdv(){const{data}=await sb.from('rdv').select('*').order('date').order('creneau');RDV=data||[];}
+
+// DASHBOARD
+function buildDash(){
+  const role=cuP?.role||'employe';
+  const av=document.getElementById('d-av');
+  av.textContent=cuP?.nom?.charAt(0)||'?';av.style.background=cuP?.couleur||'#6B7280';
+  document.getElementById('d-name').textContent=cuP?.nom||'';
+  document.getElementById('d-role-lbl').textContent=ROLE_FR[role]||'';
+  const tabs=TABS[role]||[];
+  document.getElementById('d-tabs').innerHTML=tabs.map(t=>`<button class="d-tab" data-id="${t.id}" onclick="switchView('${t.id}')">${t.lbl}</button>`).join('');
+  buildBottomNav();
+  switchView(tabs[0]?.id||'rdv');
+}
+function buildBottomNav(){
+  const tabs=BN_TABS[cuP?.role]||[];
+  const inner=document.getElementById('bn-inner');
+  if(!inner)return;
+  inner.innerHTML=tabs.map(t=>`<button class="bn-tab${cv===t.id?' active':''}" data-bnid="${t.id}" onclick="switchView('${t.id}')"><span class="bn-tab-icon">${t.icon}</span><span class="bn-tab-label">${t.lbl}</span></button>`).join('');
+}
+function updateBottomNav(){document.querySelectorAll('.bn-tab').forEach(b=>b.classList.toggle('active',b.dataset.bnid===cv));}
+function switchView(id){
+  cv=id;
+  document.querySelectorAll('.d-tab').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
+  const renders={dash:renderDash,rdv:renderRDV,hist:renderHist,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,settings:renderSettings};
+  document.getElementById('dash-body').innerHTML=(renders[id]||(() =>''))();
+  if(id==='dash')setTimeout(buildCharts,50);
+  if(id==='hist')setTimeout(applyFilters,50);
+  updateBottomNav();
+}
+
+// TABLEAU DE BORD
+function renderDash(){
+  const all=myRdvs();
+  const today=all.filter(r=>r.date===todayStr);
+  const enAtt=all.filter(r=>r.statut==='attente');
+  const totalT=all.filter(r=>r.statut==='termine'||r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
+  const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
+  const canDel=['admin','responsable'].includes(cuP?.role);
+  return`
+  <div class="pg-h"><div><h2>Tableau de bord</h2><p>Bienvenue, ${cuP?.nom} — ${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</p></div></div>
+  <div class="stats-grid">
+    <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val" style="color:var(--vert)">${today.length}</div><div class="sc-sub">rendez-vous</div></div>
+    <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à confirmer</div></div>
+    <div class="sc blue"><div class="sc-lbl">Total RDV</div><div class="sc-val" style="color:var(--blue)">${all.length}</div><div class="sc-sub">enregistrés</div></div>
+    <div class="sc rouge"><div class="sc-lbl">Tonnage</div><div class="sc-val" style="color:var(--rouge)">${totalT}T</div><div class="sc-sub">traité</div></div>
+  </div>
+  <div class="charts-grid">
+    <div class="chart-card"><h3>📦 Tonnes par semaine</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
+    <div class="chart-card"><h3>🌾 Par matière</h3><div class="chart-wrap"><canvas id="c-matieres"></canvas></div></div>
+    <div class="chart-card"><h3>📊 Par statut</h3><div class="chart-wrap"><canvas id="c-statuts"></canvas></div></div>
+    <div class="chart-card"><h3>🚛 RDV par jour (7j)</h3><div class="chart-wrap"><canvas id="c-jours"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h3>📅 RDV du jour (${today.length})</h3><button class="btn-p sm" onclick="switchView('rdv')">Voir tout →</button></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>${today.length===0?`<tr><td colspan="6"><div class="empty">Aucun RDV aujourd'hui</div></td></tr>`:today.map(r=>`<tr>
+        <td><strong>${r.creneau}</strong></td>
+        <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
+        <td>${r.transporteur}</td><td>${r.chauffeur}</td>
+        <td>${bst(r.statut)}</td>
+        <td>
+          ${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
+          <button class="abtn" onclick="openDetail(${r.id})">💬</button>
+          ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function buildCharts(){
+  const all=myRdvs();
+  const semLbls=['S-6','S-5','S-4','S-3','S-2','S-1','Cette sem.'];
+  const semData=semLbls.map((_,i)=>{const s=new Date(now);s.setDate(s.getDate()-(6-i)*7);const e=new Date(s);e.setDate(e.getDate()+7);return RDV.filter(r=>{const d=new Date(r.date);return d>=s&&d<e&&(r.statut==='termine'||r.statut==='confirme');}).reduce((t,r)=>t+r.tonnage,0);});
+  const c1=document.getElementById('c-tonnes');
+  if(c1)charts.t=new Chart(c1,{type:'bar',data:{labels:semLbls,datasets:[{data:semData,backgroundColor:'rgba(46,125,50,.7)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  const matCount={};MATIERES.forEach(m=>{const t=all.filter(r=>r.matiere_id===m.id).reduce((s,r)=>s+r.tonnage,0);if(t>0)matCount[m.nom]={t,c:m.couleur};});
+  const aM=Object.keys(matCount);
+  const c2=document.getElementById('c-matieres');
+  if(c2)charts.m=new Chart(c2,{type:'doughnut',data:{labels:aM,datasets:[{data:aM.map(k=>matCount[k].t),backgroundColor:aM.map(k=>matCount[k].c),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  const stC={attente:0,planifie:0,confirme:0,termine:0,annule:0};all.forEach(r=>stC[r.statut]=(stC[r.statut]||0)+1);
+  const c3=document.getElementById('c-statuts');
+  if(c3)charts.s=new Chart(c3,{type:'doughnut',data:{labels:['En attente','Planifié','Confirmé','Terminé','Annulé'],datasets:[{data:Object.values(stC),backgroundColor:['#D97706','#2563EB','#2E7D32','#9CA3AF','#C8102E'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  const jL=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-6+i);return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'});});
+  const jD=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-6+i);return RDV.filter(r=>r.date===fmt(d)).length;});
+  const c4=document.getElementById('c-jours');
+  if(c4)charts.j=new Chart(c4,{type:'line',data:{labels:jL,datasets:[{data:jD,borderColor:'#2E7D32',backgroundColor:'rgba(46,125,50,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#2E7D32'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+}
+
+// RDV
+function renderRDV(){
+  const list=myRdvs();
+  const today=list.filter(r=>r.date===todayStr);
+  const avenir=list.filter(r=>r.date>todayStr);
+  const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
+  const canDel=['admin','responsable'].includes(cuP?.role);
+  const tbl=(title,arr)=>`
+    <div class="card"><div class="card-h"><h3>${title}</h3></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th><th>Actions</th></tr></thead>
+      <tbody>${arr.length===0?`<tr><td colspan="8"><div class="empty">Aucun rendez-vous</div></td></tr>`:arr.map(r=>`<tr>
+        <td>${r.date}</td><td>${r.creneau}</td>
+        <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
+        <td>${r.transporteur}</td>
+        <td>${r.chauffeur}<br><span style="color:var(--soft);font-size:11px">${r.immat}</span></td>
+        <td style="font-size:12px">${r.bl}</td>
+        <td>${bst(r.statut)}</td>
+        <td>
+          ${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
+          <button class="abtn" onclick="openDetail(${r.id})">💬</button>
+          ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}
+        </td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+  return`<div class="pg-h"><div><h2>Rendez-vous</h2></div></div>${tbl(`📅 Aujourd'hui (${today.length})`,today)}${tbl(`🔜 À venir (${avenir.length})`,avenir)}`;
+}
+
+// DÉTAIL
+async function openDetail(id){
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  const m=matById(r.matiere_id);
+  const canC=['admin','responsable','employe'].includes(cuP?.role);
+  const{data:comments}=await sb.from('commentaires').select('*').eq('rdv_id',id).order('created_at');
+  const comms=comments||[];
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent=`RDV #${r.id} — ${r.matiere_nom}`;
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px">
+      <div><span style="color:var(--soft);font-size:11px">Date & Créneau</span><br><strong>${r.date} — ${r.creneau}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Statut</span><br>${bst(r.statut)}</div>
+      <div><span style="color:var(--soft);font-size:11px">Matière</span><br><span class="mat-color-dot" style="background:${m?.couleur||'#ccc'}"></span><strong>${r.matiere_nom}</strong> <span style="font-size:11px;color:var(--soft)">(${m?.code||''})</span> — ${r.tonnage}T</div>
+      <div><span style="color:var(--soft);font-size:11px">N° BL</span><br><strong>${r.bl}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Transporteur</span><br><strong>${r.transporteur}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Immat.</span><br><strong>${r.immat}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Chauffeur</span><br><strong>${r.chauffeur}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Téléphone</span><br><strong>${r.tel}</strong></div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:9px">Commentaires (${comms.length})</div>
+      <div class="comments-list" id="clist-${id}">
+        ${comms.length===0?`<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:10px">Aucun commentaire</div>`:comms.map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('')}
+      </div>
+      ${canC?`<div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="nc-${id}" placeholder="Ajouter un commentaire…" class="f-input" style="flex:1;font-size:13px;"><button class="btn-p sm" onclick="addComment(${id})">Envoyer</button></div>`:''}
+    </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
+  document.getElementById('m-cancel').style.display='none';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function addComment(rdvId){
+  const inp=document.getElementById(`nc-${rdvId}`);const text=inp.value.trim();if(!text)return;
+  await sb.from('commentaires').insert({rdv_id:rdvId,auteur:cuP?.nom||'?',auteur_couleur:cuP?.couleur||'#6B7280',texte:text});
+  inp.value='';
+  const{data}=await sb.from('commentaires').select('*').eq('rdv_id',rdvId).order('created_at');
+  document.getElementById(`clist-${rdvId}`).innerHTML=(data||[]).map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('');
+  showToast('Commentaire ajouté');
+}
+
+// HISTORIQUE
+function renderHist(){
+  return`
+  <div class="pg-h"><div><h2>Historique</h2></div><button class="btn-p sm" onclick="exportCSV()">⬇ Export CSV</button></div>
+  <div class="card"><div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+    <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Du</div><input type="date" class="f-input" id="h-from" onchange="applyFilters()"></div>
+    <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Au</div><input type="date" class="f-input" id="h-to" onchange="applyFilters()"></div>
+    <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Matière</div>
+      <select class="f-sel" id="h-mat" onchange="applyFilters()"><option value="">Toutes</option>${MATIERES.filter(m=>m.actif).map(m=>`<option value="${m.id}">${m.nom}</option>`).join('')}</select>
+    </div>
+    <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Statut</div>
+      <select class="f-sel" id="h-stat" onchange="applyFilters()"><option value="">Tous</option><option value="attente">En attente</option><option value="planifie">Planifié</option><option value="confirme">Confirmé</option><option value="termine">Terminé</option><option value="annule">Annulé</option></select>
+    </div>
+    <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Transporteur</div><input type="text" class="f-input" id="h-trans" placeholder="Rechercher…" oninput="applyFilters()"></div>
+    <button class="btn-s sm" onclick="resetFilters()">Réinitialiser</button>
+  </div></div>
+  <div class="card"><div class="card-h"><h3 id="h-count">Résultats</h3></div><div class="tbl-wrap" id="h-tbl"></div></div>`;
+}
+function applyFilters(){
+  let list=myRdvs();
+  const from=document.getElementById('h-from')?.value,to=document.getElementById('h-to')?.value;
+  const mat=document.getElementById('h-mat')?.value,stat=document.getElementById('h-stat')?.value;
+  const trans=document.getElementById('h-trans')?.value?.toLowerCase();
+  if(from)list=list.filter(r=>r.date>=from);if(to)list=list.filter(r=>r.date<=to);
+  if(mat)list=list.filter(r=>r.matiere_id===mat);if(stat)list=list.filter(r=>r.statut===stat);
+  if(trans)list=list.filter(r=>r.transporteur.toLowerCase().includes(trans)||r.chauffeur.toLowerCase().includes(trans));
+  const tot=list.reduce((s,r)=>s+r.tonnage,0);
+  document.getElementById('h-count').textContent=`${list.length} résultat(s) — ${tot}T`;
+  document.getElementById('h-tbl').innerHTML=`<table><thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Code</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th></tr></thead>
+  <tbody>${list.length===0?`<tr><td colspan="9"><div class="empty">Aucun résultat</div></td></tr>`:list.map(r=>{const m=matById(r.matiere_id);return`<tr><td>${r.date}</td><td>${r.creneau}</td><td>${matDot(r.matiere_id)}${r.matiere_nom}</td><td><span style="font-family:monospace;font-size:11px;background:var(--bg);padding:1px 6px;border-radius:4px;border:1px solid var(--border)">${m?.code||'—'}</span></td><td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${r.bl}</td><td>${bst(r.statut)}</td></tr>`;}).join('')}</tbody></table>`;
+}
+function resetFilters(){['h-from','h-to','h-mat','h-stat','h-trans'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
+function exportCSV(){
+  const list=myRdvs();
+  const h=['Date','Créneau','Matière','Code','Tonnage','Transporteur','Immat','Chauffeur','Téléphone','N° BL','Statut'];
+  const rows=list.map(r=>{const m=matById(r.matiere_id);return[r.date,r.creneau,r.matiere_nom,m?.code||'',r.tonnage,r.transporteur,r.immat,r.chauffeur,r.tel,r.bl,ST[r.statut]?.lbl||r.statut];});
+  const csv=[h,...rows].map(r=>r.join(';')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`rdv_${todayStr}.csv`;a.click();
+}
+
+// CRÉNEAUX
+function renderSlots(){
+  const canBlock=['admin','responsable'].includes(cuP?.role);
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()+i);return{date:fmt(d),label:d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})};});
+  const rows=CRENEAUX.map(c=>`<tr><td style="font-weight:600;white-space:nowrap;padding:9px 13px;font-size:12.5px">${c}</td>${days.map(d=>{
+    const blk=isBlocked(d.date,c),cnt=slotCount(d.date,c),res=slotReservedFor(d.date,c),resMat=res?matById(res):null,full=cnt>=MAX_PAR_CRENEAU;
+    let cls=blk?'br':full?'br':cnt>0?'bo':'bg';
+    let info=blk?'Bloqué':full?`Complet ${cnt}/${MAX_PAR_CRENEAU}`:cnt>0?`${cnt}/${MAX_PAR_CRENEAU}`:'Libre';
+    if(res&&resMat)info+=`<br><span style="font-size:10px">🔒 ${resMat.code}</span>`;
+    return`<td style="padding:6px 8px;text-align:center"><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="badge ${cls}" style="white-space:nowrap">${info}</span>${canBlock?`<button class="abtn" onclick="toggleBlock('${d.date}','${c}')" style="font-size:10.5px;padding:2px 7px;margin:0">${blk?'Débloquer':'Bloquer'}</button>`:''}</div></td>`;
+  }).join('')}</tr>`).join('');
+  return`
+  <div class="pg-h"><div><h2>Créneaux</h2><p>7 prochains jours — max ${MAX_PAR_CRENEAU}/créneau</p></div></div>
+  <div class="card"><div class="card-h"><h3>Disponibilité</h3><div style="display:flex;gap:6px"><span class="badge bg">Libre</span><span class="badge bo">Partiel</span><span class="badge br">Complet/Bloqué</span></div></div>
+  <div class="tbl-wrap"><table><thead><tr><th>Créneau</th>${days.map(d=>`<th style="text-align:center">${d.label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
+  <div class="card"><div class="card-h"><h3>🔒 Réservés par matière</h3>${canBlock?`<button class="btn-p sm" onclick="openAddSlotMat()">+ Ajouter</button>`:''}</div>
+  <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Code</th>${canBlock?'<th>Action</th>':''}</tr></thead>
+  <tbody>${SLOTS_MAT.length===0?`<tr><td colspan="${canBlock?5:4}"><div class="empty">Aucune réservation</div></td></tr>`:SLOTS_MAT.map(s=>{const m=matById(s.matiere_id);return`<tr><td>${s.date}</td><td>${s.creneau}</td><td>${m?`<span class="mat-color-dot" style="background:${m.couleur}"></span>${m.nom}`:'—'}</td><td><span style="font-family:monospace;font-size:11px;background:var(--bg);padding:1px 6px;border-radius:4px;border:1px solid var(--border)">${m?.code||'—'}</span></td>${canBlock?`<td><button class="abtn del" onclick="removeSlotMat(${s.id})">✕</button></td>`:''}</tr>`;}).join('')}</tbody></table></div></div>`;
+}
+async function toggleBlock(date,creneau){
+  const ex=BLOCKED.find(b=>b.date===date&&b.creneau===creneau);
+  if(ex){await sb.from('creneaux_bloques').delete().eq('id',ex.id);showToast('Créneau débloqué');}
+  else{await sb.from('creneaux_bloques').insert({date,creneau});showToast('Créneau bloqué');}
+  const{data}=await sb.from('creneaux_bloques').select('*');BLOCKED=data||[];switchView('slots');
+}
+function openAddSlotMat(){
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='Réserver un créneau par matière';
+  document.getElementById('m-desc').textContent='Ce créneau sera exclusivement pour la matière choisie.';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="sm-date" min="${todayStr}"></div>
+    <div class="fgrp"><label>Créneau <span class="req">*</span></label><select id="sm-cren"><option value="">—</option>${CRENEAUX.map(c=>`<option>${c}</option>`).join('')}</select></div>
+    <div class="fgrp"><label>Matière <span class="req">*</span></label><select id="sm-mat"><option value="">—</option>${MATIERES.filter(m=>m.actif).map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</select></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Réserver';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const date=document.getElementById('sm-date').value,cren=document.getElementById('sm-cren').value,mat=document.getElementById('sm-mat').value;
+    if(!date||!cren||!mat)return;
+    await sb.from('creneaux_matieres').insert({date,creneau:cren,matiere_id:mat});
+    const{data}=await sb.from('creneaux_matieres').select('*');SLOTS_MAT=data||[];
+    closeModal();switchView('slots');showToast('Réservation ajoutée');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+async function removeSlotMat(id){await sb.from('creneaux_matieres').delete().eq('id',id);const{data}=await sb.from('creneaux_matieres').select('*');SLOTS_MAT=data||[];switchView('slots');showToast('Supprimé');}
+
+// MATIÈRES
+function renderMatieres(){
+  const canEdit=['admin','responsable'].includes(cuP?.role);
+  const cats=[...new Set(MATIERES.map(m=>m.categorie))];
+  const matCards=cats.map(cat=>`<div class="card">
+    <div class="card-h"><h3>${cat} <span style="font-weight:400;color:var(--soft);font-size:12px">(${MATIERES.filter(m=>m.categorie===cat&&m.actif).length} actives)</span></h3>${canEdit?`<button class="btn-p sm" onclick="openAddMat('${cat}')">+ Ajouter</button>`:''}</div>
+    <div style="display:flex;flex-direction:column;">${MATIERES.filter(m=>m.categorie===cat).map(m=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border-s);">
+        <div style="width:14px;height:14px;border-radius:50%;background:${m.couleur};flex-shrink:0;border:2px solid rgba(0,0,0,.1)"></div>
+        <div style="flex:1;min-width:0;"><div style="font-size:13.5px;font-weight:600;">${m.nom}</div><div style="font-size:11px;color:var(--soft);font-family:monospace;margin-top:1px">${m.code}</div></div>
+        <span class="badge ${m.actif?'bg':'bgy'}" style="flex-shrink:0">${m.actif?'Active':'Inactive'}</span>
+        ${canEdit?`<div style="display:flex;gap:6px;flex-shrink:0"><button class="abtn" onclick="openEditMat('${m.id}')">✏️</button><button class="abtn del" onclick="toggleMatActif('${m.id}',${!m.actif})">${m.actif?'Off':'On'}</button></div>`:''}
+      </div>`).join('')}
+    </div>
+  </div>`).join('');
+
+  const incompatList=[];
+  INCOMPATS.forEach(i=>{const a=matById(i.matiere_a),b=matById(i.matiere_b);if(a&&b)incompatList.push({id:i.id,a,b});});
+
+  return`
+  <div class="pg-h"><div><h2>🌾 Matières premières</h2><p>Catalogue et incompatibilités</p></div></div>
+  ${matCards}
+  <div class="card">
+    <div class="card-h"><div><h3>🚫 Incompatibilités</h3><p style="font-size:12px;color:var(--soft);margin-top:2px">Matières qui ne peuvent pas se succéder</p></div>${canEdit?`<button class="btn-p sm" onclick="openAddIncompat()">+ Ajouter</button>`:''}</div>
+    <div style="display:flex;flex-direction:column;">
+      ${incompatList.length===0?`<div class="empty">Aucune incompatibilité définie</div>`:incompatList.map(r=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-s);">
+          <span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;flex:1;flex-wrap:wrap;gap:6px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:${r.a.couleur};display:inline-block"></span>${r.a.nom}</span>
+            <span style="color:var(--rouge);font-weight:700;font-size:12px;">✕ après</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:${r.b.couleur};display:inline-block"></span>${r.b.nom}</span>
+          </span>
+          ${canEdit?`<button class="abtn del" onclick="deleteIncompat(${r.id})" style="flex-shrink:0;padding:4px 10px">✕</button>`:''}
+        </div>`).join('')}
+    </div>
+    ${canEdit?`<div style="padding:10px 16px;background:var(--vert-l);border-top:1px solid var(--border);font-size:12px;color:var(--vert);">💡 Cliquez <strong>+ Ajouter</strong> pour définir une nouvelle règle</div>`:''}
+  </div>`;
+}
+function openAddMat(defaultCat='Céréales'){
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='Ajouter une matière première';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:11px">
+    <div class="frow"><div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="am-nom" placeholder="Ex: Féverole"></div><div class="fgrp"><label>Code <span class="req">*</span></label><input type="text" id="am-code" placeholder="Ex: FEV" maxlength="6"></div></div>
+    <div class="frow"><div class="fgrp"><label>Catégorie</label><select id="am-cat">${['Céréales','Oléagineux','Légumineuses','Autre'].map(c=>`<option${c===defaultCat?' selected':''}>${c}</option>`).join('')}</select></div><div class="fgrp"><label>Couleur</label><input type="color" id="am-color" value="#6B7280" style="height:38px;cursor:pointer;padding:2px"></div></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Ajouter';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const nom=document.getElementById('am-nom').value.trim(),code=document.getElementById('am-code').value.trim().toUpperCase();
+    if(!nom||!code)return;
+    await sb.from('matieres').insert({id:'MAT'+Date.now(),code,nom,categorie:document.getElementById('am-cat').value,couleur:document.getElementById('am-color').value,actif:true});
+    const{data}=await sb.from('matieres').select('*').order('categorie').order('nom');MATIERES=data||[];
+    closeModal();switchView('matieres');showToast('Matière ajoutée');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+function openEditMat(id){
+  const m=matById(id);if(!m)return;
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent=`Modifier — ${m.nom}`;
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:11px">
+    <div class="frow"><div class="fgrp"><label>Nom</label><input type="text" id="em-nom" value="${m.nom}"></div><div class="fgrp"><label>Code</label><input type="text" id="em-code" value="${m.code}" maxlength="6"></div></div>
+    <div class="frow"><div class="fgrp"><label>Catégorie</label><select id="em-cat">${['Céréales','Oléagineux','Légumineuses','Autre'].map(c=>`<option${m.categorie===c?' selected':''}>${c}</option>`).join('')}</select></div><div class="fgrp"><label>Couleur</label><input type="color" id="em-color" value="${m.couleur}" style="height:38px;cursor:pointer;padding:2px"></div></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Enregistrer';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    await sb.from('matieres').update({nom:document.getElementById('em-nom').value.trim()||m.nom,code:document.getElementById('em-code').value.trim().toUpperCase()||m.code,categorie:document.getElementById('em-cat').value,couleur:document.getElementById('em-color').value}).eq('id',id);
+    const{data}=await sb.from('matieres').select('*').order('categorie').order('nom');MATIERES=data||[];
+    closeModal();switchView('matieres');showToast('Mis à jour');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+async function toggleMatActif(id,val){await sb.from('matieres').update({actif:val}).eq('id',id);const{data}=await sb.from('matieres').select('*').order('categorie').order('nom');MATIERES=data||[];switchView('matieres');showToast(val?'Activée':'Désactivée');}
+function openAddIncompat(){
+  const opts=MATIERES.filter(m=>m.actif).map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('');
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='Ajouter une incompatibilité';
+  document.getElementById('m-desc').textContent='La matière A ne peut pas être livrée juste après la matière B.';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+    <div class="fgrp"><label>Matière A <span class="req">*</span> <span style="color:var(--soft);font-size:11px">(à livrer)</span></label><select id="ic-a"><option value="">—</option>${opts}</select></div>
+    <div style="text-align:center;font-size:13px;color:var(--rouge);font-weight:700">✕ interdit après</div>
+    <div class="fgrp"><label>Matière B <span class="req">*</span> <span style="color:var(--soft);font-size:11px">(qui précède)</span></label><select id="ic-b"><option value="">—</option>${opts}</select></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Ajouter la règle';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const a=document.getElementById('ic-a').value,b=document.getElementById('ic-b').value;
+    if(!a||!b||a===b)return;
+    const{error}=await sb.from('incompatibilites').insert({matiere_a:a,matiere_b:b});
+    if(error){showToast('Règle déjà existante','error');return;}
+    const{data}=await sb.from('incompatibilites').select('*');INCOMPATS=data||[];
+    closeModal();switchView('matieres');showToast('Règle ajoutée');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+async function deleteIncompat(id){await sb.from('incompatibilites').delete().eq('id',id);const{data}=await sb.from('incompatibilites').select('*');INCOMPATS=data||[];switchView('matieres');showToast('Règle supprimée');}
+
+// NOUVEAU RDV
+function renderNew(){
+  const isT=cuP?.role==='transporteur',isC=cuP?.role==='chauffeur';
+  return`
+  <div class="pg-h"><div><h2>Nouveau rendez-vous</h2></div></div>
+  <div class="card"><div class="card-h"><h3>📋 Demande de livraison</h3><p>Les champs <span class="req">*</span> sont obligatoires</p></div>
+  <div style="padding:18px;display:flex;flex-direction:column;gap:18px">
+    <div><div class="fsect"><span class="dot dr"></span>Date & Horaire</div>
+      <div class="frow"><div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="nf-date" min="${todayStr}" onchange="updateSlots()"></div>
+      <div class="fgrp"><label>Créneau <span class="req">*</span></label><select id="nf-cren"><option value="">— Choisir date et matière d'abord —</option></select></div></div>
+    </div>
+    <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
+      <div class="frow"><div class="fgrp"><label>Matière <span class="req">*</span></label>
+        <select id="nf-mat" onchange="updateSlots()">${['Céréales','Oléagineux'].map(cat=>`<optgroup label="${cat}">${MATIERES.filter(m=>m.actif&&m.categorie===cat).map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</optgroup>`).join('')}</select>
+      </div>
+      <div class="fgrp"><label>Tonnage (T) <span class="req">*</span></label><input type="number" id="nf-ton" placeholder="Ex: 26" min="1" max="40"></div></div>
+      <div class="fgrp" style="margin-top:11px"><label>N° bon de livraison <span class="req">*</span></label><input type="text" id="nf-bl" placeholder="BL-2024-00XXX"></div>
+    </div>
+    <div><div class="fsect"><span class="dot dr"></span>Transporteur & Véhicule</div>
+      <div class="frow"><div class="fgrp"><label>Transporteur <span class="req">*</span></label><input type="text" id="nf-trans" value="${isT||isC?cuP?.entreprise||'':''}" ${isT||isC?'readonly':''} placeholder="Raison sociale"></div>
+      <div class="fgrp"><label>Immatriculation <span class="req">*</span></label><input type="text" id="nf-immat" placeholder="AA-123-BB"></div></div>
+    </div>
+    <div><div class="fsect"><span class="dot dv"></span>Chauffeur</div>
+      <div class="frow"><div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="nf-chauf" value="${isC?cuP?.nom||'':''}" ${isC?'readonly':''} placeholder="Prénom Nom"></div>
+      <div class="fgrp"><label>Téléphone <span class="req">*</span></label><input type="tel" id="nf-tel" placeholder="06 00 00 00 00"></div></div>
+    </div>
+    <div id="incompat-warn" style="display:none;background:var(--orange-l);border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400E">⚠️ <strong>Attention :</strong> <span id="incompat-msg"></span></div>
+  </div>
+  <div class="card-foot"><button class="btn-s" onclick="switchView('rdv')">Annuler</button><button class="btn-p" onclick="submitRdv()">✓ Soumettre</button></div>
+  </div>`;
+}
+function updateSlots(){
+  const date=document.getElementById('nf-date')?.value,matId=document.getElementById('nf-mat')?.value;
+  const sel=document.getElementById('nf-cren');if(!sel)return;
+  if(!date||!matId){sel.innerHTML='<option value="">— Choisir date et matière d\'abord —</option>';return;}
+  sel.innerHTML='<option value="">— Sélectionner un créneau —</option>';
+  CRENEAUX.forEach(c=>{const check=checkSlot(date,c,matId);const opt=document.createElement('option');if(check.ok){opt.value=c;opt.textContent=c;}else{opt.value='';opt.disabled=true;opt.textContent=`${c} — Indisponible`;}sel.appendChild(opt);});
+}
+async function submitRdv(){
+  const ids=['nf-date','nf-cren','nf-mat','nf-ton','nf-bl','nf-trans','nf-immat','nf-chauf','nf-tel'];
+  let ok=true;ids.forEach(id=>{const el=document.getElementById(id);if(!el||!el.value.trim()){if(el)el.style.borderColor='var(--rouge)';ok=false;}else if(el)el.style.borderColor='';});
+  if(!ok)return;
+  const date=document.getElementById('nf-date').value,cren=document.getElementById('nf-cren').value,matId=document.getElementById('nf-mat').value;
+  if(!checkSlot(date,cren,matId).ok){showToast('Créneau indisponible pour cette matière','error');return;}
+  const m=matById(matId);
+  showLoader('Enregistrement…');
+  const{error}=await sb.from('rdv').insert({date,creneau:cren,matiere_id:matId,matiere_nom:m?.nom||'',tonnage:parseInt(document.getElementById('nf-ton').value),bl:document.getElementById('nf-bl').value,transporteur:document.getElementById('nf-trans').value,immat:document.getElementById('nf-immat').value,chauffeur:document.getElementById('nf-chauf').value,tel:document.getElementById('nf-tel').value,statut:'attente',user_id:cu.id});
+  hideLoader();
+  if(error){showToast('Erreur: '+error.message,'error');return;}
+  await reloadRdv();showToast('Demande envoyée ! Confirmation sous 24h.');switchView('rdv');
+}
+
+// UTILISATEURS
+function renderUsers(){
+  const isAdmin=cuP?.role==='admin';
+  return`
+  <div class="pg-h"><div><h2>Utilisateurs</h2><p>${USERS.length} comptes</p></div>${isAdmin?`<button class="btn-p sm" onclick="openAddUser()">+ Ajouter</button>`:''}</div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Nom</th><th>Rôle</th><th>Entreprise</th><th>Actions</th></tr></thead>
+    <tbody>${USERS.map(u=>`<tr>
+      <td><span class="av-sm" style="background:${u.couleur||'#6B7280'}">${u.nom?.charAt(0)||'?'}</span>${u.nom}</td>
+      <td>${brol(u.role)}</td><td>${u.entreprise||'—'}</td>
+      <td>${isAdmin?`<button class="abtn" onclick="openEditUser('${u.id}')">✏️</button>`:''} ${isAdmin&&u.id!==cu.id?`<button class="abtn del" onclick="confirmDelUser('${u.id}')">✕</button>`:''}</td>
+    </tr>`).join('')}</tbody>
+  </table></div></div>`;
+}
+function openAddUser(){
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent='Ajouter un utilisateur';
+  document.getElementById('m-desc').textContent='Un email de confirmation sera envoyé.';
+  document.getElementById('m-content').innerHTML=`<div class="frow">
+    <div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="au-name" placeholder="Prénom Nom"></div>
+    <div class="fgrp"><label>Email <span class="req">*</span></label><input type="email" id="au-email"></div>
+    <div class="fgrp"><label>Mot de passe <span class="req">*</span></label><input type="text" id="au-pwd" placeholder="Motdepasse1!"></div>
+    <div class="fgrp"><label>Rôle <span class="req">*</span></label><select id="au-role"><option value="">—</option>${['responsable','employe','transporteur','chauffeur'].map(r=>`<option value="${r}">${ROLE_FR[r]}</option>`).join('')}</select></div>
+    <div class="fgrp"><label>Entreprise</label><input type="text" id="au-co"></div>
+    <div class="fgrp"><label>Couleur</label><input type="color" id="au-color" value="#6B7280" style="height:38px;cursor:pointer;padding:2px"></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Créer';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const name=document.getElementById('au-name').value.trim(),email=document.getElementById('au-email').value.trim(),pwd=document.getElementById('au-pwd').value.trim(),role=document.getElementById('au-role').value;
+    if(!name||!email||!pwd||!role)return;
+    showLoader('Création…');
+    const{data:authData,error}=await sb.auth.signUp({email,password:pwd});
+    if(error){hideLoader();showToast('Erreur: '+error.message,'error');return;}
+    await sb.from('profils').insert({id:authData.user.id,nom:name,role,entreprise:document.getElementById('au-co').value.trim(),couleur:document.getElementById('au-color').value});
+    const{data}=await sb.from('profils').select('*');USERS=data||[];
+    hideLoader();closeModal();switchView('users');showToast('Compte créé — confirmation email envoyée');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+function openEditUser(id){
+  const u=USERS.find(u=>u.id===id);if(!u)return;
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent=`Modifier — ${u.nom}`;
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`<div class="frow">
+    <div class="fgrp"><label>Nom</label><input type="text" id="eu-name" value="${u.nom}"></div>
+    <div class="fgrp"><label>Rôle</label><select id="eu-role">${['responsable','employe','transporteur','chauffeur'].map(r=>`<option value="${r}"${u.role===r?' selected':''}>${ROLE_FR[r]}</option>`).join('')}</select></div>
+    <div class="fgrp"><label>Entreprise</label><input type="text" id="eu-co" value="${u.entreprise||''}"></div>
+    <div class="fgrp"><label>Couleur</label><input type="color" id="eu-color" value="${u.couleur||'#6B7280'}" style="height:38px;cursor:pointer;padding:2px"></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Enregistrer';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    await sb.from('profils').update({nom:document.getElementById('eu-name').value||u.nom,role:document.getElementById('eu-role').value||u.role,entreprise:document.getElementById('eu-co').value,couleur:document.getElementById('eu-color').value}).eq('id',id);
+    const{data}=await sb.from('profils').select('*');USERS=data||[];
+    closeModal();switchView('users');showToast('Profil mis à jour');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+function confirmDelUser(id){const u=USERS.find(u=>u.id===id);showModal('Supprimer ce compte ?',`${u?.nom} sera définitivement supprimé.`,'Supprimer',async()=>{await sb.from('profils').delete().eq('id',id);const{data}=await sb.from('profils').select('*');USERS=data||[];closeModal();switchView('users');showToast('Compte supprimé');},true);}
+
+// CHAUFFEURS
+function renderDrivers(){
+  const drivers=USERS.filter(u=>u.role==='chauffeur'&&u.entreprise===cuP?.entreprise);
+  return`
+  <div class="pg-h"><div><h2>Mes chauffeurs</h2><p>${cuP?.entreprise}</p></div><button class="btn-p sm" onclick="openAddDriver()">+ Ajouter</button></div>
+  <div class="card"><div class="tbl-wrap"><table>
+    <thead><tr><th>Nom</th><th>Entreprise</th><th>RDV</th><th>Actions</th></tr></thead>
+    <tbody>${drivers.length===0?`<tr><td colspan="4"><div class="empty">Aucun chauffeur</div></td></tr>`:drivers.map(d=>`<tr>
+      <td><span class="av-sm" style="background:${d.couleur||'#6B7280'}">${d.nom?.charAt(0)||'?'}</span>${d.nom}</td>
+      <td>${d.entreprise||'—'}</td><td>${RDV.filter(r=>r.user_id===d.id).length}</td>
+      <td><button class="abtn" onclick="openEditUser('${d.id}')">✏️</button><button class="abtn del" onclick="confirmDelUser('${d.id}')">✕</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div></div>`;
+}
+function openAddDriver(){
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='Ajouter un chauffeur';
+  document.getElementById('m-desc').textContent='Un email de confirmation sera envoyé.';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="ad-name"></div>
+    <div class="fgrp"><label>Email <span class="req">*</span></label><input type="email" id="ad-email"></div>
+    <div class="fgrp"><label>Mot de passe <span class="req">*</span></label><input type="text" id="ad-pwd" placeholder="Chauf2024!"></div>
+  </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Créer';ok.className='m-ok';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const name=document.getElementById('ad-name').value.trim(),email=document.getElementById('ad-email').value.trim(),pwd=document.getElementById('ad-pwd').value.trim();
+    if(!name||!email||!pwd)return;
+    showLoader('Création…');
+    const{data:authData,error}=await sb.auth.signUp({email,password:pwd});
+    if(error){hideLoader();showToast('Erreur: '+error.message,'error');return;}
+    await sb.from('profils').insert({id:authData.user.id,nom:name,role:'chauffeur',entreprise:cuP?.entreprise||'',couleur:'#6B7280'});
+    const{data}=await sb.from('profils').select('*');USERS=data||[];
+    hideLoader();closeModal();switchView('drivers');showToast('Chauffeur créé');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+
+// PARAMÈTRES
+function renderSettings(){
+  return`
+  <div class="pg-h"><div><h2>Paramètres</h2></div></div>
+  <div class="card"><div class="card-h"><h3>🏭 Site de réception</h3></div>
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div class="frow">
+      <div class="fgrp"><label>Nom du site</label><input type="text" value="Sanders Euralis — Vic-en-Bigorre"></div>
+      <div class="fgrp"><label>Téléphone</label><input type="text" value="05 62 38 XX XX"></div>
+      <div class="fgrp"><label>Adresse</label><input type="text" value="193 Impasse Lautrec, 65500 Vic-en-Bigorre"></div>
+      <div class="fgrp"><label>Email</label><input type="email" value="reception@sanders-euralis.fr"></div>
+    </div>
+    <div><div class="fsect"><span class="dot dv"></span>Horaires</div>
+      <div class="frow">
+        <div class="fgrp"><label>Ouverture Lun–Ven</label><input type="time" value="06:00"></div>
+        <div class="fgrp"><label>Fermeture Lun–Ven</label><input type="time" value="18:00"></div>
+        <div class="fgrp"><label>Ouverture Samedi</label><input type="time" value="06:00"></div>
+        <div class="fgrp"><label>Fermeture Samedi</label><input type="time" value="12:00"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card-foot"><button class="btn-p" onclick="showToast('Paramètres sauvegardés ✓')">💾 Sauvegarder</button></div>
+  </div>`;
+}
+
+// ACTIONS
+async function changeStatut(id,statut){showLoader();await sb.from('rdv').update({statut}).eq('id',id);await reloadRdv();hideLoader();switchView(cv);showToast('Statut mis à jour');}
+function delRdv(id){showModal('Supprimer ce RDV ?','Action irréversible.','Supprimer',async()=>{showLoader();await sb.from('rdv').delete().eq('id',id);await reloadRdv();hideLoader();closeModal();switchView(cv);showToast('RDV supprimé');},true);}
+
+// MODAL
+function showModal(title,desc,okLbl,onOk,danger){
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent=title;document.getElementById('m-desc').textContent=desc;document.getElementById('m-content').innerHTML='';
+  const ok=document.getElementById('m-ok');ok.textContent=okLbl;ok.className='m-ok'+(danger?' danger':'');ok.onclick=onOk;
+  document.getElementById('m-cancel').style.display=danger?'':'none';
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('m-cancel').style.display='';}
+
+// INIT
+(async function init(){
+  showLoader('Initialisation…');
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){cu=session.user;await loadProfil();await loadAllData();buildDash();showPage('dash');}
+  else{hideLoader();showPage('home');}
+})();
+</script>
+</body>
+</html>
