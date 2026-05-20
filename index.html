@@ -1314,7 +1314,7 @@ function closeModal(){document.getElementById('modal').classList.remove('show');
 // ══ PWA ══
 function initPWA(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/Reception/sw.js').then(()=>console.log('SW registered')).catch(()=>{});
+    navigator.serviceWorker.register('./sw.js').then(()=>console.log('SW registered')).catch(e=>console.log('SW error',e));
   }
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();deferredInstall=e;

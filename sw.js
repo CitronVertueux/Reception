@@ -1,12 +1,6 @@
-const CACHE_NAME = 'sanders-euralis-v1';
-const ASSETS = [
-  '/Reception/',
-  '/Reception/index.html',
-  '/Reception/manifest.json',
-];
+const CACHE_NAME = 'sanders-euralis-v2';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).catch(()=>{}));
   self.skipWaiting();
 });
 
@@ -18,7 +12,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
   if(e.request.url.includes('supabase.co')) return;
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+  if(e.request.url.includes('googleapis.com')) return;
+  if(e.request.url.includes('cdnjs.cloudflare.com')) return;
+  if(e.request.url.includes('jsdelivr.net')) return;
 });
