@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2E7D32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Réception SE">
+<link rel="manifest" href="manifest.json">
 <title>Sanders Euralis – Réception Matières Premières</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -13,6 +18,7 @@
   --vert:#2E7D32;--vert-l:#f0f7f0;--vert-m:#a8d5aa;--vert-d:#1b5e20;
   --orange:#D97706;--orange-l:#FFF7E6;
   --blue:#2563EB;--blue-l:#EFF6FF;
+  --purple:#7C3AED;--purple-l:#F5F3FF;
   --bg:#F8F6F2;--white:#FFF;
   --text:#1E1E1E;--soft:#6B7280;--muted:#9CA3AF;
   --border:#E8E4DE;--border-s:#F0EDE8;
@@ -21,18 +27,15 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
-
 .loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 .loader-overlay.hidden{display:none;}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--vert);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-text{font-size:13px;color:var(--soft);}
-
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:10000;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:90vw;}
 .toast.show{opacity:1;}
 .toast.success{background:var(--vert);}
 .toast.error{background:var(--rouge);}
-
 .page{display:none;min-height:100vh;flex-direction:column;}
 .page.active{display:flex;}
 
@@ -77,7 +80,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-login:hover{background:var(--vert-d);}
 .login-back{padding:0 30px 20px;text-align:center;}
 .login-back button{background:none;border:none;color:var(--soft);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
-.login-back button:hover{color:var(--vert);}
 
 /* DASHBOARD */
 #pg-dash{background:var(--bg);}
@@ -99,8 +101,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-out{background:none;border:1.5px solid var(--border);color:var(--soft);padding:5px 11px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;cursor:pointer;transition:border-color .15s,color .15s;}
 .btn-out:hover{border-color:var(--rouge);color:var(--rouge);}
 .dash-body{flex:1;padding:22px;max-width:1400px;width:100%;margin:0 auto;}
-.view{display:none;}
-.view.active{display:block;}
 
 /* COMPOSANTS */
 .pg-h{margin-bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;}
@@ -113,6 +113,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sc.rouge::before{background:var(--rouge);}
 .sc.orange::before{background:var(--orange);}
 .sc.blue::before{background:var(--blue);}
+.sc.purple::before{background:var(--purple);}
 .sc-lbl{font-size:11px;color:var(--soft);font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
 .sc-val{font-family:'Lora',serif;font-size:22px;font-weight:600;line-height:1;}
 .sc-sub{font-size:11.5px;color:var(--soft);margin-top:3px;}
@@ -134,10 +135,12 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .bb{background:var(--blue-l);color:var(--blue);}
 .br{background:var(--rouge-l);color:var(--rouge);}
 .bgy{background:#F3F4F6;color:#6B7280;}
+.bpu{background:var(--purple-l);color:var(--purple);}
 .btn-p{background:var(--vert);color:#fff;border:none;padding:8px 16px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .18s;box-shadow:0 2px 8px rgba(46,125,50,.2);}
 .btn-p:hover{background:var(--vert-d);}
 .btn-p.sm{padding:6px 12px;font-size:12px;}
 .btn-p.rouge{background:var(--rouge);}
+.btn-p.orange{background:var(--orange);}
 .btn-s{background:none;border:1.5px solid var(--border);padding:7px 14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;color:var(--soft);transition:border-color .18s,color .18s;}
 .btn-s:hover{border-color:var(--vert);color:var(--vert);}
 .btn-s.sm{padding:5px 10px;font-size:12px;}
@@ -145,6 +148,7 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .abtn:hover{border-color:var(--vert);color:var(--vert);}
 .abtn.del:hover{border-color:var(--rouge);color:var(--rouge);}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;}
 .fgrp{display:flex;flex-direction:column;gap:5px;}
 .fgrp label{font-size:12.5px;font-weight:500;}
 .req{color:var(--rouge);}
@@ -165,6 +169,7 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .chart-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh-sm);}
 .chart-card h3{font-size:13px;font-weight:600;margin-bottom:12px;}
 .chart-wrap{position:relative;height:190px;}
+.chart-wrap-lg{position:relative;height:280px;}
 .comments-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;}
 .comment{background:var(--bg);border-radius:8px;padding:9px 12px;}
 .comment-h{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
@@ -175,11 +180,14 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .av-sm{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;vertical-align:middle;margin-right:6px;}
 .mat-color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;flex-shrink:0;}
 .empty{padding:32px;text-align:center;color:var(--soft);font-size:13px;}
+
+/* MODAL */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
 .modal-ov.show{display:flex;animation:fi .22s ease;}
 @keyframes fi{from{opacity:0}to{opacity:1}}
 .modal-box{background:#fff;border-radius:14px;padding:26px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.14);animation:su .25s ease;max-height:90vh;overflow-y:auto;}
 .modal-box.wide{max-width:620px;}
+.modal-box.xl{max-width:800px;}
 @keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-box h3{font-family:'Lora',serif;font-size:17px;font-weight:600;margin-bottom:6px;}
 .modal-box .m-desc{font-size:13px;color:var(--soft);margin-bottom:16px;line-height:1.6;}
@@ -189,6 +197,67 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .m-ok:hover{background:var(--vert-d);}
 .m-ok.danger{background:var(--rouge);}
 
+/* ══ CALENDRIER ══ */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-nav h3{font-family:'Lora',serif;font-size:18px;font-weight:600;text-transform:capitalize;}
+.cal-nav-btns{display:flex;gap:6px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-head{text-align:center;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--soft);padding:6px 0;}
+.cal-day{min-height:90px;border:1.5px solid var(--border);border-radius:8px;padding:6px;background:var(--white);cursor:pointer;transition:border-color .15s,background .15s;position:relative;}
+.cal-day:hover{border-color:var(--vert);background:var(--vert-l);}
+.cal-day.today{border-color:var(--vert);border-width:2px;}
+.cal-day.other-month{background:var(--bg);opacity:.5;}
+.cal-day.has-rdv{background:linear-gradient(135deg,#fff 60%,var(--vert-l));}
+.cal-day-num{font-size:12px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.cal-day-num .today-dot{width:5px;height:5px;border-radius:50%;background:var(--vert);}
+.cal-pill{font-size:10px;font-weight:600;padding:1px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.cal-pill:hover{opacity:.8;}
+.cal-more{font-size:10px;color:var(--soft);font-weight:500;margin-top:2px;}
+.cal-week-view{display:grid;grid-template-columns:80px repeat(7,1fr);gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.cal-week-head{background:var(--bg);padding:8px 6px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.cal-week-head.today-col{background:var(--vert-l);color:var(--vert);}
+.cal-slot-label{padding:8px 6px;font-size:11px;font-weight:600;color:var(--soft);border-bottom:1px solid var(--border);border-right:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2;}
+.cal-slot-cell{padding:4px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);min-height:56px;position:relative;transition:background .15s;}
+.cal-slot-cell:hover{background:var(--vert-l);}
+.cal-slot-cell.blocked{background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 4px,#fff 4px,#fff 8px);}
+.cal-slot-cell.full{background:var(--orange-l);}
+.cal-slot-cell.today-col{background:rgba(46,125,50,.03);}
+.cal-rdv-chip{font-size:10px;font-weight:600;padding:3px 5px;border-radius:4px;margin-bottom:2px;display:flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap;overflow:hidden;}
+.cal-rdv-chip:hover{opacity:.8;}
+.cal-view-tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;}
+.cal-view-tab{padding:5px 12px;border-radius:6px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;color:var(--soft);transition:all .15s;}
+.cal-view-tab.active{background:var(--white);color:var(--text);font-weight:600;box-shadow:var(--sh-sm);}
+
+/* ══ RAPPORTS ══ */
+.rapport-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.rapport-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--sh-sm);cursor:pointer;transition:border-color .15s,transform .12s,box-shadow .15s;}
+.rapport-card:hover{border-color:var(--vert);transform:translateY(-2px);box-shadow:var(--sh);}
+.rapport-card-icon{font-size:28px;margin-bottom:10px;}
+.rapport-card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.rapport-card-desc{font-size:12px;color:var(--soft);line-height:1.5;}
+.rapport-section{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-sm);overflow:hidden;margin-bottom:16px;}
+.rapport-section-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.rapport-section-h h3{font-size:14px;font-weight:600;}
+.rapport-section-body{padding:18px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.kpi{background:var(--bg);border-radius:8px;padding:14px;text-align:center;}
+.kpi-val{font-family:'Lora',serif;font-size:24px;font-weight:600;line-height:1;margin-bottom:4px;}
+.kpi-lbl{font-size:11px;color:var(--soft);text-transform:uppercase;letter-spacing:.7px;font-weight:500;}
+.progress-bar-wrap{margin-bottom:10px;}
+.progress-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.progress-bar-label span:first-child{font-weight:500;display:flex;align-items:center;gap:5px;}
+.progress-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+
+/* ══ PWA INSTALL BANNER ══ */
+.pwa-banner{position:fixed;bottom:80px;left:12px;right:12px;background:var(--vert);color:#fff;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(46,125,50,.35);z-index:200;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pwa-banner-text{flex:1;}
+.pwa-banner-text strong{display:block;font-size:13.5px;font-weight:600;margin-bottom:2px;}
+.pwa-banner-text span{font-size:12px;opacity:.85;}
+.pwa-btn{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.5);color:#fff;padding:7px 14px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.pwa-close{background:none;border:none;color:rgba(255,255,255,.7);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
+
 /* BOTTOM NAV */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:150;box-shadow:0 -2px 12px rgba(0,0,0,.08);}
 .bottom-nav-inner{display:flex;align-items:stretch;}
@@ -197,10 +266,12 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .bn-tab-icon{font-size:19px;line-height:1;}
 .bn-tab-label{font-size:10px;white-space:nowrap;overflow:hidden;max-width:58px;text-overflow:ellipsis;}
 
+@media(max-width:1100px){.rapport-grid{grid-template-columns:1fr 1fr;}.kpi-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:900px){
   .stats-grid{grid-template-columns:1fr 1fr;}
   .charts-grid{grid-template-columns:1fr;}
   .frow{grid-template-columns:1fr;}
+  .frow3{grid-template-columns:1fr;}
   .d-tabs{display:none !important;}
   .dash-body{padding:12px 12px 76px;}
   .bottom-nav{display:block !important;}
@@ -219,8 +290,15 @@ tbody td{padding:10px 13px;vertical-align:middle;}
   .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .modal-box{padding:20px;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-width:100%;max-height:88vh;margin:0;}
   .modal-ov{align-items:flex-end;}
+  .cal-grid{grid-template-columns:repeat(7,1fr);gap:2px;}
+  .cal-day{min-height:60px;padding:4px;}
+  .cal-day-num{font-size:11px;}
+  .rapport-grid{grid-template-columns:1fr;}
+  .kpi-grid{grid-template-columns:1fr 1fr;}
+  .cal-week-view{grid-template-columns:56px repeat(7,1fr);}
+  .pwa-banner{bottom:72px;}
 }
-@media(max-width:480px){.d-right .user-chip{display:none;}}
+@media(max-width:480px){.d-right .user-chip{display:none;}.stats-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
@@ -305,42 +383,51 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 </div>
 
 <script>
+// ══ SUPABASE ══
 const SUPABASE_URL='https://qnoaclsvbuelzbmpsdib.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFub2FjbHN2YnVlbHpibXBzZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNjE3NDUsImV4cCI6MjA5NDgzNzc0NX0.MeEGe77mVVGO--BvUGglKfH_NkFV2gbRY6GupX0sl6c';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+// ══ CONSTANTES ══
 const ROLE_FR={admin:'Administrateur',responsable:'Responsable',employe:'Employé',transporteur:'Transporteur',chauffeur:'Chauffeur'};
 const ROLE_BADGE={admin:'br',responsable:'bo',employe:'bb',transporteur:'bg',chauffeur:'bgy'};
 const CRENEAUX=['06:00–08:00','08:00–10:00','10:00–12:00','12:00–14:00','14:00–16:00','16:00–18:00'];
 const MAX_PAR_CRENEAU=3;
+const JOURS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const fmt=d=>d.toISOString().split('T')[0];
 const now=new Date();
 const todayStr=fmt(now);
 const ST={attente:{lbl:'En attente',cls:'bo'},planifie:{lbl:'Planifié',cls:'bb'},confirme:{lbl:'Confirmé',cls:'bg'},termine:{lbl:'Terminé',cls:'bgy'},annule:{lbl:'Annulé',cls:'br'}};
+const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4'];
 
 const TABS={
-  admin:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'},{id:'slots',lbl:'🗓 Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'settings',lbl:'⚙️ Paramètres'}],
-  responsable:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'},{id:'slots',lbl:'🗓 Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
-  employe:[{id:'dash',lbl:'📊 Tableau de bord'},{id:'rdv',lbl:'📅 Rendez-vous'},{id:'hist',lbl:'📁 Historique'}],
-  transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau RDV'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
-  chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau RDV'},{id:'hist',lbl:'📁 Historique'}],
+  admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'settings',lbl:'⚙️ Paramètres'}],
+  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
+  employe:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'}],
+  transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'new',lbl:'➕ Nouveau'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
+  chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau'},{id:'hist',lbl:'📁 Historique'}],
 };
 const BN_TABS={
-  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'slots',icon:'🗓',lbl:'Créneaux'},{id:'matieres',icon:'🌾',lbl:'Matières'},{id:'users',icon:'👥',lbl:'Comptes'}],
-  responsable:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'slots',icon:'🗓',lbl:'Créneaux'},{id:'matieres',icon:'🌾',lbl:'Matières'},{id:'hist',icon:'📁',lbl:'Histo'}],
-  employe:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'hist',icon:'📁',lbl:'Histo'}],
-  transporteur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'drivers',icon:'👷',lbl:'Chauffeurs'},{id:'hist',icon:'📁',lbl:'Histo'}],
+  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'},{id:'users',icon:'👥',lbl:'Comptes'}],
+  responsable:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'},{id:'matieres',icon:'🌾',lbl:'Matières'}],
+  employe:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'hist',icon:'📁',lbl:'Histo'}],
+  transporteur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'drivers',icon:'👷',lbl:'Chauffeurs'},{id:'hist',icon:'📁',lbl:'Histo'}],
   chauffeur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'hist',icon:'📁',lbl:'Histo'}],
 };
 
+// ══ STATE ══
 let cu=null,cuP=null,cv=null,charts={};
 let MATIERES=[],INCOMPATS=[],RDV=[],BLOCKED=[],SLOTS_MAT=[],USERS=[];
+let calDate=new Date();
+let calView='month'; // month | week
+let deferredInstall=null;
 
-// UI
+// ══ UI HELPERS ══
 function showLoader(t='Chargement…'){document.getElementById('loader').classList.remove('hidden');document.querySelector('.loader-text').textContent=t;}
 function hideLoader(){document.getElementById('loader').classList.add('hidden');}
 let toastTimer;
-function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast show ${type}`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
+function showToast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast show ${type}`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3200);}
 function showPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));document.getElementById('pg-'+p).classList.add('active');window.scrollTo(0,0);}
 function bst(s){const st=ST[s]||ST.attente;return`<span class="badge ${st.cls}">${st.lbl}</span>`;}
 function brol(r){return`<span class="badge ${ROLE_BADGE[r]||'bgy'}">${ROLE_FR[r]}</span>`;}
@@ -371,27 +458,22 @@ function myRdvs(){
   return l;
 }
 
-// AUTH
+// ══ AUTH ══
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
   const pwd=document.getElementById('l-pwd').value;
   const err=document.getElementById('l-err');
   const btn=document.getElementById('btn-login-submit');
-  err.classList.remove('show');
-  btn.textContent='Connexion…';btn.disabled=true;
+  err.classList.remove('show');btn.textContent='Connexion…';btn.disabled=true;
   const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
   btn.textContent='Se connecter';btn.disabled=false;
   if(error){err.textContent='Email ou mot de passe incorrect.';err.classList.add('show');return;}
-  cu=data.user;
-  await loadProfil();
-  await loadAllData();
-  buildDash();
-  showPage('dash');
+  cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');
 }
 async function loadProfil(){const{data}=await sb.from('profils').select('*').eq('id',cu.id).single();cuP=data;}
 async function doLogout(){await sb.auth.signOut();cu=null;cuP=null;cv=null;showPage('home');}
 
-// DATA
+// ══ DATA ══
 async function loadAllData(){
   showLoader('Chargement des données…');
   const[m,inc,rdv,blk,slm,usr]=await Promise.all([
@@ -408,7 +490,7 @@ async function loadAllData(){
 }
 async function reloadRdv(){const{data}=await sb.from('rdv').select('*').order('date').order('creneau');RDV=data||[];}
 
-// DASHBOARD
+// ══ DASHBOARD SHELL ══
 function buildDash(){
   const role=cuP?.role||'employe';
   const av=document.getElementById('d-av');
@@ -417,13 +499,12 @@ function buildDash(){
   document.getElementById('d-role-lbl').textContent=ROLE_FR[role]||'';
   const tabs=TABS[role]||[];
   document.getElementById('d-tabs').innerHTML=tabs.map(t=>`<button class="d-tab" data-id="${t.id}" onclick="switchView('${t.id}')">${t.lbl}</button>`).join('');
-  buildBottomNav();
-  switchView(tabs[0]?.id||'rdv');
+  buildBottomNav();switchView(tabs[0]?.id||'rdv');
+  initPWA();
 }
 function buildBottomNav(){
   const tabs=BN_TABS[cuP?.role]||[];
-  const inner=document.getElementById('bn-inner');
-  if(!inner)return;
+  const inner=document.getElementById('bn-inner');if(!inner)return;
   inner.innerHTML=tabs.map(t=>`<button class="bn-tab${cv===t.id?' active':''}" data-bnid="${t.id}" onclick="switchView('${t.id}')"><span class="bn-tab-icon">${t.icon}</span><span class="bn-tab-label">${t.lbl}</span></button>`).join('');
 }
 function updateBottomNav(){document.querySelectorAll('.bn-tab').forEach(b=>b.classList.toggle('active',b.dataset.bnid===cv));}
@@ -431,49 +512,49 @@ function switchView(id){
   cv=id;
   document.querySelectorAll('.d-tab').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
-  const renders={dash:renderDash,rdv:renderRDV,hist:renderHist,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,settings:renderSettings};
+  const renders={dash:renderDash,rdv:renderRDV,cal:renderCal,hist:renderHist,rapports:renderRapports,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,settings:renderSettings};
   document.getElementById('dash-body').innerHTML=(renders[id]||(() =>''))();
   if(id==='dash')setTimeout(buildCharts,50);
   if(id==='hist')setTimeout(applyFilters,50);
+  if(id==='cal')setTimeout(()=>renderCalContent(),50);
+  if(id==='rapports')setTimeout(buildRapports,50);
   updateBottomNav();
 }
 
-// TABLEAU DE BORD
+// ══ TABLEAU DE BORD ══
 function renderDash(){
   const all=myRdvs();
   const today=all.filter(r=>r.date===todayStr);
   const enAtt=all.filter(r=>r.statut==='attente');
   const totalT=all.filter(r=>r.statut==='termine'||r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
+  const avenir=all.filter(r=>r.date>todayStr);
   const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
   const canDel=['admin','responsable'].includes(cuP?.role);
   return`
-  <div class="pg-h"><div><h2>Tableau de bord</h2><p>Bienvenue, ${cuP?.nom} — ${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</p></div></div>
+  <div class="pg-h"><div><h2>Tableau de bord</h2><p>${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
   <div class="stats-grid">
     <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val" style="color:var(--vert)">${today.length}</div><div class="sc-sub">rendez-vous</div></div>
     <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à confirmer</div></div>
-    <div class="sc blue"><div class="sc-lbl">Total RDV</div><div class="sc-val" style="color:var(--blue)">${all.length}</div><div class="sc-sub">enregistrés</div></div>
+    <div class="sc blue"><div class="sc-lbl">À venir</div><div class="sc-val" style="color:var(--blue)">${avenir.length}</div><div class="sc-sub">planifiés</div></div>
     <div class="sc rouge"><div class="sc-lbl">Tonnage</div><div class="sc-val" style="color:var(--rouge)">${totalT}T</div><div class="sc-sub">traité</div></div>
   </div>
   <div class="charts-grid">
-    <div class="chart-card"><h3>📦 Tonnes par semaine</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
-    <div class="chart-card"><h3>🌾 Par matière</h3><div class="chart-wrap"><canvas id="c-matieres"></canvas></div></div>
+    <div class="chart-card"><h3>📦 Tonnes par semaine (8 sem.)</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
+    <div class="chart-card"><h3>🌾 Répartition par matière</h3><div class="chart-wrap"><canvas id="c-matieres"></canvas></div></div>
     <div class="chart-card"><h3>📊 Par statut</h3><div class="chart-wrap"><canvas id="c-statuts"></canvas></div></div>
-    <div class="chart-card"><h3>🚛 RDV par jour (7j)</h3><div class="chart-wrap"><canvas id="c-jours"></canvas></div></div>
+    <div class="chart-card"><h3>🚛 RDV par jour (7 derniers jours)</h3><div class="chart-wrap"><canvas id="c-jours"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-h"><h3>📅 RDV du jour (${today.length})</h3><button class="btn-p sm" onclick="switchView('rdv')">Voir tout →</button></div>
+    <div class="card-h"><h3>📅 RDV d'aujourd'hui (${today.length})</h3><button class="btn-p sm" onclick="switchView('rdv')">Voir tout →</button></div>
     <div class="tbl-wrap"><table>
       <thead><tr><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Statut</th><th>Actions</th></tr></thead>
-      <tbody>${today.length===0?`<tr><td colspan="6"><div class="empty">Aucun RDV aujourd'hui</div></td></tr>`:today.map(r=>`<tr>
+      <tbody>${today.length===0?`<tr><td colspan="6"><div class="empty">✅ Aucun RDV aujourd'hui</div></td></tr>`:today.map(r=>`<tr>
         <td><strong>${r.creneau}</strong></td>
         <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
-        <td>${r.transporteur}</td><td>${r.chauffeur}</td>
-        <td>${bst(r.statut)}</td>
-        <td>
-          ${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
-          <button class="abtn" onclick="openDetail(${r.id})">💬</button>
-          ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}
-        </td>
+        <td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${bst(r.statut)}</td>
+        <td>${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
+        <button class="abtn" onclick="openDetail(${r.id})">💬</button>
+        ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}</td>
       </tr>`).join('')}</tbody>
     </table></div>
   </div>`;
@@ -481,94 +562,201 @@ function renderDash(){
 
 function buildCharts(){
   const all=myRdvs();
-  const semLbls=['S-6','S-5','S-4','S-3','S-2','S-1','Cette sem.'];
-  const semData=semLbls.map((_,i)=>{const s=new Date(now);s.setDate(s.getDate()-(6-i)*7);const e=new Date(s);e.setDate(e.getDate()+7);return RDV.filter(r=>{const d=new Date(r.date);return d>=s&&d<e&&(r.statut==='termine'||r.statut==='confirme');}).reduce((t,r)=>t+r.tonnage,0);});
+  // Tonnes / semaine (8 semaines)
+  const semLbls=[...Array(8)].map((_,i)=>{const s=new Date(now);s.setDate(s.getDate()-(7-i)*7);return`S${i===7?'':'-'+(7-i)||''}${i===7?'act':''}`;}).map((_,i)=>i===7?'Cette sem.':`S-${7-i}`);
+  const semData=[...Array(8)].map((_,i)=>{const s=new Date(now);s.setDate(s.getDate()-(7-i)*7);const e=new Date(s);e.setDate(e.getDate()+7);return RDV.filter(r=>{const d=new Date(r.date);return d>=s&&d<e&&(r.statut==='termine'||r.statut==='confirme');}).reduce((t,r)=>t+r.tonnage,0);});
   const c1=document.getElementById('c-tonnes');
-  if(c1)charts.t=new Chart(c1,{type:'bar',data:{labels:semLbls,datasets:[{data:semData,backgroundColor:'rgba(46,125,50,.7)',borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  if(c1)charts.t=new Chart(c1,{type:'bar',data:{labels:semLbls,datasets:[{data:semData,backgroundColor:semData.map((_,i)=>i===7?'rgba(46,125,50,.85)':'rgba(46,125,50,.4)'),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+  // Par matière
   const matCount={};MATIERES.forEach(m=>{const t=all.filter(r=>r.matiere_id===m.id).reduce((s,r)=>s+r.tonnage,0);if(t>0)matCount[m.nom]={t,c:m.couleur};});
   const aM=Object.keys(matCount);
   const c2=document.getElementById('c-matieres');
-  if(c2)charts.m=new Chart(c2,{type:'doughnut',data:{labels:aM,datasets:[{data:aM.map(k=>matCount[k].t),backgroundColor:aM.map(k=>matCount[k].c),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  if(c2)charts.m=new Chart(c2,{type:'doughnut',data:{labels:aM,datasets:[{data:aM.map(k=>matCount[k].t),backgroundColor:aM.map(k=>matCount[k].c),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},padding:8}}}}});
+  // Par statut
   const stC={attente:0,planifie:0,confirme:0,termine:0,annule:0};all.forEach(r=>stC[r.statut]=(stC[r.statut]||0)+1);
   const c3=document.getElementById('c-statuts');
-  if(c3)charts.s=new Chart(c3,{type:'doughnut',data:{labels:['En attente','Planifié','Confirmé','Terminé','Annulé'],datasets:[{data:Object.values(stC),backgroundColor:['#D97706','#2563EB','#2E7D32','#9CA3AF','#C8102E'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}});
+  if(c3)charts.s=new Chart(c3,{type:'doughnut',data:{labels:['En attente','Planifié','Confirmé','Terminé','Annulé'],datasets:[{data:Object.values(stC),backgroundColor:['#D97706','#2563EB','#2E7D32','#9CA3AF','#C8102E'],borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},padding:8}}}}});
+  // RDV par jour 7j
   const jL=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-6+i);return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'});});
   const jD=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-6+i);return RDV.filter(r=>r.date===fmt(d)).length;});
   const c4=document.getElementById('c-jours');
-  if(c4)charts.j=new Chart(c4,{type:'line',data:{labels:jL,datasets:[{data:jD,borderColor:'#2E7D32',backgroundColor:'rgba(46,125,50,.1)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#2E7D32'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  if(c4)charts.j=new Chart(c4,{type:'line',data:{labels:jL,datasets:[{data:jD,borderColor:'#2E7D32',backgroundColor:'rgba(46,125,50,.08)',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:'#2E7D32',pointBorderColor:'#fff',pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
 }
 
-// RDV
+// ══ RDV ══
 function renderRDV(){
   const list=myRdvs();
   const today=list.filter(r=>r.date===todayStr);
   const avenir=list.filter(r=>r.date>todayStr);
   const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
   const canDel=['admin','responsable'].includes(cuP?.role);
-  const tbl=(title,arr)=>`
+  const tbl=(title,arr,emptyMsg)=>`
     <div class="card"><div class="card-h"><h3>${title}</h3></div>
     <div class="tbl-wrap"><table>
       <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th><th>Actions</th></tr></thead>
-      <tbody>${arr.length===0?`<tr><td colspan="8"><div class="empty">Aucun rendez-vous</div></td></tr>`:arr.map(r=>`<tr>
+      <tbody>${arr.length===0?`<tr><td colspan="8"><div class="empty">${emptyMsg}</div></td></tr>`:arr.map(r=>`<tr>
         <td>${r.date}</td><td>${r.creneau}</td>
         <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
         <td>${r.transporteur}</td>
         <td>${r.chauffeur}<br><span style="color:var(--soft);font-size:11px">${r.immat}</span></td>
-        <td style="font-size:12px">${r.bl}</td>
+        <td style="font-size:12px;font-family:monospace">${r.bl}</td>
         <td>${bst(r.statut)}</td>
-        <td>
-          ${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
-          <button class="abtn" onclick="openDetail(${r.id})">💬</button>
-          ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}
-        </td>
+        <td>${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
+        <button class="abtn" onclick="openDetail(${r.id})">💬</button>
+        ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}</td>
       </tr>`).join('')}</tbody>
     </table></div></div>`;
-  return`<div class="pg-h"><div><h2>Rendez-vous</h2></div></div>${tbl(`📅 Aujourd'hui (${today.length})`,today)}${tbl(`🔜 À venir (${avenir.length})`,avenir)}`;
+  return`<div class="pg-h"><div><h2>Rendez-vous</h2></div></div>
+  ${tbl(`📅 Aujourd'hui (${today.length})`,today,'Aucun RDV aujourd\'hui')}
+  ${tbl(`🔜 À venir (${avenir.length})`,avenir,'Aucun RDV à venir')}`;
 }
 
-// DÉTAIL
-async function openDetail(id){
-  const r=RDV.find(r=>r.id===id);if(!r)return;
-  const m=matById(r.matiere_id);
-  const canC=['admin','responsable','employe'].includes(cuP?.role);
-  const{data:comments}=await sb.from('commentaires').select('*').eq('rdv_id',id).order('created_at');
-  const comms=comments||[];
-  document.getElementById('modal-box').className='modal-box wide';
-  document.getElementById('m-title').textContent=`RDV #${r.id} — ${r.matiere_nom}`;
-  document.getElementById('m-desc').textContent='';
-  document.getElementById('m-content').innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px">
-      <div><span style="color:var(--soft);font-size:11px">Date & Créneau</span><br><strong>${r.date} — ${r.creneau}</strong></div>
-      <div><span style="color:var(--soft);font-size:11px">Statut</span><br>${bst(r.statut)}</div>
-      <div><span style="color:var(--soft);font-size:11px">Matière</span><br><span class="mat-color-dot" style="background:${m?.couleur||'#ccc'}"></span><strong>${r.matiere_nom}</strong> <span style="font-size:11px;color:var(--soft)">(${m?.code||''})</span> — ${r.tonnage}T</div>
-      <div><span style="color:var(--soft);font-size:11px">N° BL</span><br><strong>${r.bl}</strong></div>
-      <div><span style="color:var(--soft);font-size:11px">Transporteur</span><br><strong>${r.transporteur}</strong></div>
-      <div><span style="color:var(--soft);font-size:11px">Immat.</span><br><strong>${r.immat}</strong></div>
-      <div><span style="color:var(--soft);font-size:11px">Chauffeur</span><br><strong>${r.chauffeur}</strong></div>
-      <div><span style="color:var(--soft);font-size:11px">Téléphone</span><br><strong>${r.tel}</strong></div>
-    </div>
-    <div style="border-top:1px solid var(--border);padding-top:12px">
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:9px">Commentaires (${comms.length})</div>
-      <div class="comments-list" id="clist-${id}">
-        ${comms.length===0?`<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:10px">Aucun commentaire</div>`:comms.map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('')}
+// ══ CALENDRIER ══
+function renderCal(){
+  return`
+  <div class="pg-h"><div><h2>🗓 Calendrier</h2></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="cal-view-tabs">
+        <button class="cal-view-tab${calView==='month'?' active':''}" onclick="setCalView('month')">Mois</button>
+        <button class="cal-view-tab${calView==='week'?' active':''}" onclick="setCalView('week')">Semaine</button>
       </div>
-      ${canC?`<div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="nc-${id}" placeholder="Ajouter un commentaire…" class="f-input" style="flex:1;font-size:13px;"><button class="btn-p sm" onclick="addComment(${id})">Envoyer</button></div>`:''}
+      <button class="btn-p sm" onclick="switchView('new')">+ Nouveau RDV</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h">
+      <div class="cal-nav" style="width:100%;margin:0">
+        <div class="cal-nav-btns">
+          <button class="btn-s sm" onclick="calPrev()">◀</button>
+          <button class="btn-s sm" onclick="calToday()">Aujourd'hui</button>
+          <button class="btn-s sm" onclick="calNext()">▶</button>
+        </div>
+        <h3 id="cal-title"></h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;align-items:center">
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:var(--vert-l);border:1px solid var(--vert);display:inline-block"></span>RDV</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 3px,#fff 3px,#fff 6px);border:1px solid #fca5a5;display:inline-block"></span>Bloqué</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body" id="cal-body" style="padding:12px"></div>
+  </div>`;
+}
+
+function setCalView(v){calView=v;switchView('cal');}
+function calPrev(){if(calView==='month'){calDate.setMonth(calDate.getMonth()-1);}else{calDate.setDate(calDate.getDate()-7);}renderCalContent();}
+function calNext(){if(calView==='month'){calDate.setMonth(calDate.getMonth()+1);}else{calDate.setDate(calDate.getDate()+7);}renderCalContent();}
+function calToday(){calDate=new Date();renderCalContent();}
+
+function renderCalContent(){
+  const titleEl=document.getElementById('cal-title');
+  const bodyEl=document.getElementById('cal-body');
+  if(!titleEl||!bodyEl)return;
+  if(calView==='month')renderCalMonth(titleEl,bodyEl);
+  else renderCalWeek(titleEl,bodyEl);
+}
+
+function renderCalMonth(titleEl,bodyEl){
+  const y=calDate.getFullYear(),mo=calDate.getMonth();
+  titleEl.textContent=`${MOIS[mo]} ${y}`;
+  const first=new Date(y,mo,1);
+  let startDow=first.getDay();startDow=startDow===0?6:startDow-1;
+  const daysInMonth=new Date(y,mo+1,0).getDate();
+  const cells=[];
+  // Jours mois précédent
+  const prevDays=new Date(y,mo,0).getDate();
+  for(let i=startDow-1;i>=0;i--)cells.push({day:prevDays-i,month:'prev',date:fmt(new Date(y,mo-1,prevDays-i))});
+  for(let d=1;d<=daysInMonth;d++)cells.push({day:d,month:'cur',date:fmt(new Date(y,mo,d))});
+  while(cells.length%7!==0)cells.push({day:cells.length-daysInMonth-startDow+1,month:'next',date:''});
+
+  bodyEl.innerHTML=`
+    <div class="cal-grid">
+      ${JOURS.map(j=>`<div class="cal-head">${j}</div>`).join('')}
+      ${cells.map(c=>{
+        const rdvsDay=myRdvs().filter(r=>r.date===c.date);
+        const blkDay=CRENEAUX.some(cr=>isBlocked(c.date,cr));
+        const isToday=c.date===todayStr;
+        const cls=['cal-day',c.month!=='cur'?'other-month':'',isToday?'today':'',rdvsDay.length>0?'has-rdv':''].filter(Boolean).join(' ');
+        const pills=rdvsDay.slice(0,2).map(r=>{const m=matById(r.matiere_id);return`<div class="cal-pill" style="background:${m?.couleur||'#6B7280'}22;color:${m?.couleur||'#6B7280'};border:1px solid ${m?.couleur||'#6B7280'}44" onclick="openDetail(${r.id})">${m?.code||'?'} ${r.tonnage}T</div>`;}).join('');
+        const more=rdvsDay.length>2?`<div class="cal-more">+${rdvsDay.length-2} autre(s)</div>`:'';
+        return`<div class="${cls}" onclick="calDayClick('${c.date}')">
+          <div class="cal-day-num"><span>${c.day}</span>${isToday?'<span class="today-dot"></span>':''}</div>
+          ${blkDay?`<div style="font-size:9px;color:var(--rouge);font-weight:600">🔒 Bloqué</div>`:''}
+          ${pills}${more}
+        </div>`;
+      }).join('')}
     </div>`;
+}
+
+function renderCalWeek(titleEl,bodyEl){
+  // Trouver le lundi de la semaine
+  const d=new Date(calDate);
+  const dow=d.getDay();const diff=dow===0?-6:1-dow;
+  d.setDate(d.getDate()+diff);
+  const weekDays=[...Array(7)].map((_,i)=>{const dd=new Date(d);dd.setDate(dd.getDate()+i);return{date:fmt(dd),label:JOURS[i],day:dd.getDate(),month:dd.getMonth()};});
+  titleEl.textContent=`Semaine du ${weekDays[0].day} ${MOIS[weekDays[0].month].substring(0,3)}. au ${weekDays[6].day} ${MOIS[weekDays[6].month].substring(0,3)}.`;
+
+  const rows=CRENEAUX.map(cr=>`
+    <div class="cal-slot-label">${cr.replace('–','\n')}</div>
+    ${weekDays.map(wd=>{
+      const blk=isBlocked(wd.date,cr);
+      const rdvsSlot=myRdvs().filter(r=>r.date===wd.date&&r.creneau===cr);
+      const cnt=slotCount(wd.date,cr);
+      const full=cnt>=MAX_PAR_CRENEAU;
+      const isToday=wd.date===todayStr;
+      let cls='cal-slot-cell';
+      if(blk)cls+=' blocked';else if(full)cls+=' full';
+      if(isToday)cls+=' today-col';
+      const chips=rdvsSlot.map(r=>{const m=matById(r.matiere_id);return`<div class="cal-rdv-chip" style="background:${m?.couleur||'#6B7280'}22;color:${m?.couleur||'#6B7280'};border:1px solid ${m?.couleur||'#6B7280'}44" onclick="event.stopPropagation();openDetail(${r.id})"><span>${m?.code||'?'}</span><span>${r.tonnage}T</span></div>`;}).join('');
+      return`<div class="${cls}" onclick="calDayClick('${wd.date}')">${blk?'<div style="font-size:9px;color:var(--rouge);font-weight:600;text-align:center;padding:4px">🔒</div>':chips}</div>`;
+    }).join('')}`).join('');
+
+  bodyEl.innerHTML=`
+    <div class="cal-week-view" style="margin-bottom:0">
+      <div class="cal-week-head"></div>
+      ${weekDays.map(wd=>`<div class="cal-week-head${wd.date===todayStr?' today-col':''}">${wd.label}<br><strong>${wd.day}</strong></div>`).join('')}
+      ${rows}
+    </div>`;
+}
+
+function calDayClick(date){
+  if(!date)return;
+  const rdvsDay=myRdvs().filter(r=>r.date===date);
+  if(rdvsDay.length===0){
+    // Proposer de créer un RDV
+    if(['admin','responsable','transporteur','chauffeur'].includes(cuP?.role)){
+      document.getElementById('modal-box').className='modal-box';
+      document.getElementById('m-title').textContent=`📅 ${date}`;
+      document.getElementById('m-desc').textContent='Aucun RDV ce jour. Voulez-vous en créer un ?';
+      document.getElementById('m-content').innerHTML='';
+      const ok=document.getElementById('m-ok');ok.textContent='Créer un RDV';ok.className='m-ok';
+      ok.onclick=()=>{closeModal();switchView('new');setTimeout(()=>{const el=document.getElementById('nf-date');if(el){el.value=date;updateSlots();}},100);};
+      document.getElementById('m-cancel').style.display='';
+      document.getElementById('modal').classList.add('show');
+    }
+    return;
+  }
+  // Afficher les RDV du jour
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent=`📅 ${date} — ${rdvsDay.length} RDV`;
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
+    ${rdvsDay.map(r=>{const m=matById(r.matiere_id);return`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer" onclick="closeModal();openDetail(${r.id})">
+        <div style="width:4px;height:40px;border-radius:2px;background:${m?.couleur||'#6B7280'};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${r.creneau}</div>
+          <div style="font-size:12px;color:var(--soft)">${matDot(r.matiere_id)}${r.matiere_nom} — ${r.tonnage}T</div>
+          <div style="font-size:11px;color:var(--muted)">${r.transporteur} · ${r.chauffeur}</div>
+        </div>
+        ${bst(r.statut)}
+      </div>`;}).join('')}
+  </div>`;
   const ok=document.getElementById('m-ok');ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
   document.getElementById('m-cancel').style.display='none';
   document.getElementById('modal').classList.add('show');
 }
 
-async function addComment(rdvId){
-  const inp=document.getElementById(`nc-${rdvId}`);const text=inp.value.trim();if(!text)return;
-  await sb.from('commentaires').insert({rdv_id:rdvId,auteur:cuP?.nom||'?',auteur_couleur:cuP?.couleur||'#6B7280',texte:text});
-  inp.value='';
-  const{data}=await sb.from('commentaires').select('*').eq('rdv_id',rdvId).order('created_at');
-  document.getElementById(`clist-${rdvId}`).innerHTML=(data||[]).map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('');
-  showToast('Commentaire ajouté');
-}
-
-// HISTORIQUE
+// ══ HISTORIQUE ══
 function renderHist(){
   return`
   <div class="pg-h"><div><h2>Historique</h2></div><button class="btn-p sm" onclick="exportCSV()">⬇ Export CSV</button></div>
@@ -597,7 +785,7 @@ function applyFilters(){
   const tot=list.reduce((s,r)=>s+r.tonnage,0);
   document.getElementById('h-count').textContent=`${list.length} résultat(s) — ${tot}T`;
   document.getElementById('h-tbl').innerHTML=`<table><thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Code</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th></tr></thead>
-  <tbody>${list.length===0?`<tr><td colspan="9"><div class="empty">Aucun résultat</div></td></tr>`:list.map(r=>{const m=matById(r.matiere_id);return`<tr><td>${r.date}</td><td>${r.creneau}</td><td>${matDot(r.matiere_id)}${r.matiere_nom}</td><td><span style="font-family:monospace;font-size:11px;background:var(--bg);padding:1px 6px;border-radius:4px;border:1px solid var(--border)">${m?.code||'—'}</span></td><td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${r.bl}</td><td>${bst(r.statut)}</td></tr>`;}).join('')}</tbody></table>`;
+  <tbody>${list.length===0?`<tr><td colspan="9"><div class="empty">Aucun résultat</div></td></tr>`:list.map(r=>{const m=matById(r.matiere_id);return`<tr><td>${r.date}</td><td>${r.creneau}</td><td>${matDot(r.matiere_id)}${r.matiere_nom}</td><td><span style="font-family:monospace;font-size:11px;background:var(--bg);padding:1px 6px;border-radius:4px;border:1px solid var(--border)">${m?.code||'—'}</span></td><td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td><td style="font-family:monospace;font-size:11px">${r.bl}</td><td>${bst(r.statut)}</td></tr>`;}).join('')}</tbody></table>`;
 }
 function resetFilters(){['h-from','h-to','h-mat','h-stat','h-trans'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});applyFilters();}
 function exportCSV(){
@@ -606,9 +794,139 @@ function exportCSV(){
   const rows=list.map(r=>{const m=matById(r.matiere_id);return[r.date,r.creneau,r.matiere_nom,m?.code||'',r.tonnage,r.transporteur,r.immat,r.chauffeur,r.tel,r.bl,ST[r.statut]?.lbl||r.statut];});
   const csv=[h,...rows].map(r=>r.join(';')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=`rdv_${todayStr}.csv`;a.click();
+  showToast('Export CSV téléchargé');
 }
 
-// CRÉNEAUX
+// ══ RAPPORTS ══
+function renderRapports(){
+  const canExport=['admin','responsable'].includes(cuP?.role);
+  return`
+  <div class="pg-h"><div><h2>📈 Rapports & Analyses</h2><p>Statistiques détaillées de l'activité</p></div>
+    ${canExport?`<div style="display:flex;gap:8px"><button class="btn-p sm orange" onclick="exportRapportPDF()">📄 Export PDF</button><button class="btn-p sm" onclick="exportCSV()">📊 Export CSV</button></div>`:''}
+  </div>
+  <!-- KPIs période -->
+  <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12.5px;font-weight:600;color:var(--soft)">Période :</span>
+    <select class="f-sel" id="r-period" onchange="buildRapports()" style="width:auto">
+      <option value="7">7 derniers jours</option>
+      <option value="30" selected>30 derniers jours</option>
+      <option value="90">3 derniers mois</option>
+      <option value="365">Cette année</option>
+    </select>
+  </div>
+  <div id="rapports-body"></div>`;
+}
+
+function buildRapports(){
+  const body=document.getElementById('rapports-body');if(!body)return;
+  const days=parseInt(document.getElementById('r-period')?.value||30);
+  const since=new Date(now);since.setDate(since.getDate()-days);
+  const sinceStr=fmt(since);
+  const list=myRdvs().filter(r=>r.date>=sinceStr);
+  const totalRdv=list.length;
+  const totalT=list.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+  const confirmes=list.filter(r=>r.statut==='confirme'||r.statut==='termine').length;
+  const txConf=totalRdv?Math.round(confirmes/totalRdv*100):0;
+  const transporteurs=[...new Set(list.map(r=>r.transporteur))].length;
+  const moyT=totalRdv?Math.round(totalT/Math.max(1,list.filter(r=>r.statut!=='annule').length)):0;
+
+  // Par matière (pour barres de progression)
+  const matStats=MATIERES.map(m=>{
+    const rdvsMat=list.filter(r=>r.matiere_id===m.id&&r.statut!=='annule');
+    return{m,count:rdvsMat.length,tonnage:rdvsMat.reduce((s,r)=>s+r.tonnage,0)};
+  }).filter(s=>s.count>0).sort((a,b)=>b.tonnage-a.tonnage);
+  const maxT=matStats[0]?.tonnage||1;
+
+  // Par transporteur
+  const transStats={};list.forEach(r=>{if(!transStats[r.transporteur])transStats[r.transporteur]={count:0,tonnage:0};transStats[r.transporteur].count++;transStats[r.transporteur].tonnage+=(r.statut!=='annule'?r.tonnage:0);});
+  const transArr=Object.entries(transStats).sort((a,b)=>b[1].tonnage-a[1].tonnage).slice(0,8);
+  const maxTT=transArr[0]?.[1]?.tonnage||1;
+
+  // Par créneau
+  const slotStats={};CRENEAUX.forEach(c=>{slotStats[c]=list.filter(r=>r.creneau===c&&r.statut!=='annule').length;});
+
+  body.innerHTML=`
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-val" style="color:var(--vert)">${totalRdv}</div><div class="kpi-lbl">Total RDV</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">${totalT}T</div><div class="kpi-lbl">Tonnage total</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--orange)">${txConf}%</div><div class="kpi-lbl">Taux confirmation</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--purple)">${moyT}T</div><div class="kpi-lbl">Moy. / livraison</div></div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card"><h3>📦 Tonnage journalier</h3><div class="chart-wrap-lg"><canvas id="r-daily"></canvas></div></div>
+    <div class="chart-card"><h3>🚛 Top transporteurs (tonnage)</h3><div class="chart-wrap-lg"><canvas id="r-trans"></canvas></div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="rapport-section">
+      <div class="rapport-section-h"><h3>🌾 Tonnage par matière</h3></div>
+      <div class="rapport-section-body">
+        ${matStats.length===0?`<div class="empty">Aucune donnée</div>`:matStats.map(s=>`
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-label">
+              <span>${matDot(s.m.id)}${s.m.nom} <span class="badge bgy" style="font-size:10px">${s.m.code}</span></span>
+              <span style="font-weight:600">${s.tonnage}T <span style="color:var(--muted);font-weight:400">(${s.count} RDV)</span></span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar-fill" style="width:${Math.round(s.tonnage/maxT*100)}%;background:${s.m.couleur}"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="rapport-section">
+      <div class="rapport-section-h"><h3>⏱ Utilisation des créneaux</h3></div>
+      <div class="rapport-section-body"><div class="chart-wrap" style="height:220px"><canvas id="r-slots"></canvas></div></div>
+    </div>
+  </div>
+
+  <div class="rapport-section">
+    <div class="rapport-section-h"><h3>🏆 Top transporteurs</h3></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Transporteur</th><th>Nb RDV</th><th>Tonnage</th><th>Part</th></tr></thead>
+      <tbody>${transArr.map(([name,s],i)=>`<tr>
+        <td><strong style="color:${i===0?'#D97706':i===1?'#9CA3AF':i===2?'#B45309':'var(--soft)'}">${i+1}</strong></td>
+        <td>${name}</td><td>${s.count}</td><td><strong>${s.tonnage}T</strong></td>
+        <td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--vert);width:${Math.round(s.tonnage/maxTT*100)}%;border-radius:3px"></div></div><span style="font-size:11px;color:var(--soft);white-space:nowrap">${Math.round(s.tonnage/totalT*100)}%</span></div></td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+
+  // Chart journalier
+  const dailyDays=Math.min(days,30);
+  const dLabels=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});});
+  const dData=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return list.filter(r=>r.date===fmt(d)&&r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);});
+  const c1=document.getElementById('r-daily');
+  if(c1){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
+  charts.d=new Chart(c1,{type:'bar',data:{labels:dLabels,datasets:[{data:dData,backgroundColor:'rgba(46,125,50,.65)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}
+
+  const c2=document.getElementById('r-trans');
+  if(c2)charts.tr=new Chart(c2,{type:'bar',data:{labels:transArr.map(([n])=>n.length>15?n.substring(0,15)+'…':n),datasets:[{data:transArr.map(([,s])=>s.tonnage),backgroundColor:'rgba(37,99,235,.65)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+
+  const c3=document.getElementById('r-slots');
+  if(c3)charts.sl=new Chart(c3,{type:'polarArea',data:{labels:CRENEAUX.map(c=>c.split('–')[0]),datasets:[{data:CRENEAUX.map(c=>slotStats[c]||0),backgroundColor:['rgba(46,125,50,.7)','rgba(37,99,235,.7)','rgba(217,119,6,.7)','rgba(124,58,237,.7)','rgba(200,16,46,.7)','rgba(16,185,129,.7)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10}}}}}});
+}
+
+function exportRapportPDF(){
+  const days=parseInt(document.getElementById('r-period')?.value||30);
+  const since=new Date(now);since.setDate(since.getDate()-days);
+  const list=myRdvs().filter(r=>r.date>=fmt(since));
+  const totalT=list.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:30px;color:#1E1E1E}h1{color:#2E7D32;border-bottom:2px solid #2E7D32;padding-bottom:8px}h2{color:#1E1E1E;font-size:14px;margin-top:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th{background:#F8F6F2;padding:8px;text-align:left;border:1px solid #E8E4DE;font-size:11px}td{padding:7px 8px;border:1px solid #E8E4DE}.badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600}.footer{margin-top:30px;font-size:11px;color:#9CA3AF;text-align:center}</style></head><body>
+  <h1>📊 Rapport Sanders Euralis — Réception Matières Premières</h1>
+  <p>Période : ${days} derniers jours · Généré le ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</p>
+  <h2>Résumé</h2>
+  <table><tr><th>Total RDV</th><th>Tonnage total</th><th>RDV actifs</th></tr>
+  <tr><td>${list.length}</td><td>${totalT}T</td><td>${list.filter(r=>r.statut!=='annule').length}</td></tr></table>
+  <h2>Détail des rendez-vous</h2>
+  <table><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th></tr>
+  ${list.map(r=>`<tr><td>${r.date}</td><td>${r.creneau}</td><td>${r.matiere_nom}</td><td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${r.bl}</td><td>${ST[r.statut]?.lbl||r.statut}</td></tr>`).join('')}
+  </table>
+  <div class="footer">Sanders Euralis — Site de Vic-en-Bigorre · 193 Impasse Lautrec, 65500 Vic-en-Bigorre</div>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+  showToast('Rapport ouvert — utilisez Fichier > Imprimer pour sauvegarder en PDF');
+}
+
+// ══ CRÉNEAUX ══
 function renderSlots(){
   const canBlock=['admin','responsable'].includes(cuP?.role);
   const days=[...Array(7)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()+i);return{date:fmt(d),label:d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})};});
@@ -620,7 +938,7 @@ function renderSlots(){
     return`<td style="padding:6px 8px;text-align:center"><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><span class="badge ${cls}" style="white-space:nowrap">${info}</span>${canBlock?`<button class="abtn" onclick="toggleBlock('${d.date}','${c}')" style="font-size:10.5px;padding:2px 7px;margin:0">${blk?'Débloquer':'Bloquer'}</button>`:''}</div></td>`;
   }).join('')}</tr>`).join('');
   return`
-  <div class="pg-h"><div><h2>Créneaux</h2><p>7 prochains jours — max ${MAX_PAR_CRENEAU}/créneau</p></div></div>
+  <div class="pg-h"><div><h2>⏱ Créneaux</h2><p>7 prochains jours — max ${MAX_PAR_CRENEAU}/créneau</p></div></div>
   <div class="card"><div class="card-h"><h3>Disponibilité</h3><div style="display:flex;gap:6px"><span class="badge bg">Libre</span><span class="badge bo">Partiel</span><span class="badge br">Complet/Bloqué</span></div></div>
   <div class="tbl-wrap"><table><thead><tr><th>Créneau</th>${days.map(d=>`<th style="text-align:center">${d.label}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>
   <div class="card"><div class="card-h"><h3>🔒 Réservés par matière</h3>${canBlock?`<button class="btn-p sm" onclick="openAddSlotMat()">+ Ajouter</button>`:''}</div>
@@ -655,7 +973,7 @@ function openAddSlotMat(){
 }
 async function removeSlotMat(id){await sb.from('creneaux_matieres').delete().eq('id',id);const{data}=await sb.from('creneaux_matieres').select('*');SLOTS_MAT=data||[];switchView('slots');showToast('Supprimé');}
 
-// MATIÈRES
+// ══ MATIÈRES ══
 function renderMatieres(){
   const canEdit=['admin','responsable'].includes(cuP?.role);
   const cats=[...new Set(MATIERES.map(m=>m.categorie))];
@@ -670,19 +988,17 @@ function renderMatieres(){
       </div>`).join('')}
     </div>
   </div>`).join('');
-
   const incompatList=[];
   INCOMPATS.forEach(i=>{const a=matById(i.matiere_a),b=matById(i.matiere_b);if(a&&b)incompatList.push({id:i.id,a,b});});
-
   return`
-  <div class="pg-h"><div><h2>🌾 Matières premières</h2><p>Catalogue et incompatibilités</p></div></div>
+  <div class="pg-h"><div><h2>🌾 Matières premières</h2></div></div>
   ${matCards}
   <div class="card">
     <div class="card-h"><div><h3>🚫 Incompatibilités</h3><p style="font-size:12px;color:var(--soft);margin-top:2px">Matières qui ne peuvent pas se succéder</p></div>${canEdit?`<button class="btn-p sm" onclick="openAddIncompat()">+ Ajouter</button>`:''}</div>
     <div style="display:flex;flex-direction:column;">
-      ${incompatList.length===0?`<div class="empty">Aucune incompatibilité définie</div>`:incompatList.map(r=>`
+      ${incompatList.length===0?`<div class="empty">Aucune règle définie</div>`:incompatList.map(r=>`
         <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-s);">
-          <span style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;flex:1;flex-wrap:wrap;gap:6px;">
+          <span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;flex:1;flex-wrap:wrap;">
             <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:${r.a.couleur};display:inline-block"></span>${r.a.nom}</span>
             <span style="color:var(--rouge);font-weight:700;font-size:12px;">✕ après</span>
             <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:50%;background:${r.b.couleur};display:inline-block"></span>${r.b.nom}</span>
@@ -690,12 +1006,11 @@ function renderMatieres(){
           ${canEdit?`<button class="abtn del" onclick="deleteIncompat(${r.id})" style="flex-shrink:0;padding:4px 10px">✕</button>`:''}
         </div>`).join('')}
     </div>
-    ${canEdit?`<div style="padding:10px 16px;background:var(--vert-l);border-top:1px solid var(--border);font-size:12px;color:var(--vert);">💡 Cliquez <strong>+ Ajouter</strong> pour définir une nouvelle règle</div>`:''}
   </div>`;
 }
 function openAddMat(defaultCat='Céréales'){
   document.getElementById('modal-box').className='modal-box';
-  document.getElementById('m-title').textContent='Ajouter une matière première';
+  document.getElementById('m-title').textContent='Ajouter une matière';
   document.getElementById('m-desc').textContent='';
   document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:11px">
     <div class="frow"><div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="am-nom" placeholder="Ex: Féverole"></div><div class="fgrp"><label>Code <span class="req">*</span></label><input type="text" id="am-code" placeholder="Ex: FEV" maxlength="6"></div></div>
@@ -735,13 +1050,13 @@ function openAddIncompat(){
   const opts=MATIERES.filter(m=>m.actif).map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('');
   document.getElementById('modal-box').className='modal-box';
   document.getElementById('m-title').textContent='Ajouter une incompatibilité';
-  document.getElementById('m-desc').textContent='La matière A ne peut pas être livrée juste après la matière B.';
+  document.getElementById('m-desc').textContent='La matière A ne peut pas suivre directement la matière B.';
   document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
-    <div class="fgrp"><label>Matière A <span class="req">*</span> <span style="color:var(--soft);font-size:11px">(à livrer)</span></label><select id="ic-a"><option value="">—</option>${opts}</select></div>
+    <div class="fgrp"><label>Matière A <span class="req">*</span></label><select id="ic-a"><option value="">—</option>${opts}</select></div>
     <div style="text-align:center;font-size:13px;color:var(--rouge);font-weight:700">✕ interdit après</div>
-    <div class="fgrp"><label>Matière B <span class="req">*</span> <span style="color:var(--soft);font-size:11px">(qui précède)</span></label><select id="ic-b"><option value="">—</option>${opts}</select></div>
+    <div class="fgrp"><label>Matière B <span class="req">*</span></label><select id="ic-b"><option value="">—</option>${opts}</select></div>
   </div>`;
-  const ok=document.getElementById('m-ok');ok.textContent='Ajouter la règle';ok.className='m-ok';
+  const ok=document.getElementById('m-ok');ok.textContent='Ajouter';ok.className='m-ok';
   document.getElementById('m-cancel').style.display='';
   ok.onclick=async()=>{
     const a=document.getElementById('ic-a').value,b=document.getElementById('ic-b').value;
@@ -755,7 +1070,7 @@ function openAddIncompat(){
 }
 async function deleteIncompat(id){await sb.from('incompatibilites').delete().eq('id',id);const{data}=await sb.from('incompatibilites').select('*');INCOMPATS=data||[];switchView('matieres');showToast('Règle supprimée');}
 
-// NOUVEAU RDV
+// ══ NOUVEAU RDV ══
 function renderNew(){
   const isT=cuP?.role==='transporteur',isC=cuP?.role==='chauffeur';
   return`
@@ -768,7 +1083,7 @@ function renderNew(){
     </div>
     <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
       <div class="frow"><div class="fgrp"><label>Matière <span class="req">*</span></label>
-        <select id="nf-mat" onchange="updateSlots()">${['Céréales','Oléagineux'].map(cat=>`<optgroup label="${cat}">${MATIERES.filter(m=>m.actif&&m.categorie===cat).map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</optgroup>`).join('')}</select>
+        <select id="nf-mat" onchange="updateSlots()">${['Céréales','Oléagineux','Légumineuses','Autre'].map(cat=>{const ms=MATIERES.filter(m=>m.actif&&m.categorie===cat);return ms.length?`<optgroup label="${cat}">${ms.map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</optgroup>`:''}).join('')}</select>
       </div>
       <div class="fgrp"><label>Tonnage (T) <span class="req">*</span></label><input type="number" id="nf-ton" placeholder="Ex: 26" min="1" max="40"></div></div>
       <div class="fgrp" style="margin-top:11px"><label>N° bon de livraison <span class="req">*</span></label><input type="text" id="nf-bl" placeholder="BL-2024-00XXX"></div>
@@ -783,20 +1098,20 @@ function renderNew(){
     </div>
     <div id="incompat-warn" style="display:none;background:var(--orange-l);border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400E">⚠️ <strong>Attention :</strong> <span id="incompat-msg"></span></div>
   </div>
-  <div class="card-foot"><button class="btn-s" onclick="switchView('rdv')">Annuler</button><button class="btn-p" onclick="submitRdv()">✓ Soumettre</button></div>
+  <div class="card-foot"><button class="btn-s" onclick="switchView('rdv')">Annuler</button><button class="btn-p" onclick="submitRdv()">✓ Soumettre la demande</button></div>
   </div>`;
 }
 function updateSlots(){
   const date=document.getElementById('nf-date')?.value,matId=document.getElementById('nf-mat')?.value;
   const sel=document.getElementById('nf-cren');if(!sel)return;
   if(!date||!matId){sel.innerHTML='<option value="">— Choisir date et matière d\'abord —</option>';return;}
-  sel.innerHTML='<option value="">— Sélectionner un créneau —</option>';
-  CRENEAUX.forEach(c=>{const check=checkSlot(date,c,matId);const opt=document.createElement('option');if(check.ok){opt.value=c;opt.textContent=c;}else{opt.value='';opt.disabled=true;opt.textContent=`${c} — Indisponible`;}sel.appendChild(opt);});
+  sel.innerHTML='<option value="">— Sélectionner —</option>';
+  CRENEAUX.forEach(c=>{const check=checkSlot(date,c,matId);const opt=document.createElement('option');if(check.ok){opt.value=c;opt.textContent=`${c} (${MAX_PAR_CRENEAU-slotCount(date,c)} place(s))`;}else{opt.value='';opt.disabled=true;opt.textContent=`${c} — Indisponible`;}sel.appendChild(opt);});
 }
 async function submitRdv(){
   const ids=['nf-date','nf-cren','nf-mat','nf-ton','nf-bl','nf-trans','nf-immat','nf-chauf','nf-tel'];
   let ok=true;ids.forEach(id=>{const el=document.getElementById(id);if(!el||!el.value.trim()){if(el)el.style.borderColor='var(--rouge)';ok=false;}else if(el)el.style.borderColor='';});
-  if(!ok)return;
+  if(!ok){showToast('Veuillez remplir tous les champs obligatoires','error');return;}
   const date=document.getElementById('nf-date').value,cren=document.getElementById('nf-cren').value,matId=document.getElementById('nf-mat').value;
   if(!checkSlot(date,cren,matId).ok){showToast('Créneau indisponible pour cette matière','error');return;}
   const m=matById(matId);
@@ -804,10 +1119,55 @@ async function submitRdv(){
   const{error}=await sb.from('rdv').insert({date,creneau:cren,matiere_id:matId,matiere_nom:m?.nom||'',tonnage:parseInt(document.getElementById('nf-ton').value),bl:document.getElementById('nf-bl').value,transporteur:document.getElementById('nf-trans').value,immat:document.getElementById('nf-immat').value,chauffeur:document.getElementById('nf-chauf').value,tel:document.getElementById('nf-tel').value,statut:'attente',user_id:cu.id});
   hideLoader();
   if(error){showToast('Erreur: '+error.message,'error');return;}
-  await reloadRdv();showToast('Demande envoyée ! Confirmation sous 24h.');switchView('rdv');
+  await reloadRdv();showToast('✅ Demande envoyée ! Confirmation sous 24h.');switchView('rdv');
 }
 
-// UTILISATEURS
+// ══ DÉTAIL RDV ══
+async function openDetail(id){
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  const m=matById(r.matiere_id);
+  const canC=['admin','responsable','employe'].includes(cuP?.role);
+  const canSt=['admin','responsable','employe'].includes(cuP?.role);
+  const{data:comments}=await sb.from('commentaires').select('*').eq('rdv_id',id).order('created_at');
+  const comms=comments||[];
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent=`RDV #${r.id} — ${r.matiere_nom}`;
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px">
+      <div><span style="color:var(--soft);font-size:11px">Date & Créneau</span><br><strong>${r.date} — ${r.creneau}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Statut</span><br>
+        ${canSt?`<select class="f-sel" onchange="changeStatut(${r.id},this.value)" style="width:auto;font-size:12px;padding:3px 24px 3px 8px">${Object.entries(ST).map(([k,v])=>`<option value="${k}"${r.statut===k?' selected':''}>${v.lbl}</option>`).join('')}</select>`:bst(r.statut)}
+      </div>
+      <div><span style="color:var(--soft);font-size:11px">Matière</span><br><span class="mat-color-dot" style="background:${m?.couleur||'#ccc'}"></span><strong>${r.matiere_nom}</strong> <span style="font-size:11px;color:var(--soft)">(${m?.code||''})</span> — ${r.tonnage}T</div>
+      <div><span style="color:var(--soft);font-size:11px">N° BL</span><br><strong style="font-family:monospace">${r.bl}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Transporteur</span><br><strong>${r.transporteur}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Immatriculation</span><br><strong>${r.immat}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Chauffeur</span><br><strong>${r.chauffeur}</strong></div>
+      <div><span style="color:var(--soft);font-size:11px">Téléphone</span><br><a href="tel:${r.tel}" style="color:var(--vert);font-weight:600">${r.tel}</a></div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:9px">💬 Commentaires (${comms.length})</div>
+      <div class="comments-list" id="clist-${id}">
+        ${comms.length===0?`<div style="font-size:12.5px;color:var(--muted);text-align:center;padding:10px">Aucun commentaire</div>`:comms.map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('')}
+      </div>
+      ${canC?`<div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="nc-${id}" placeholder="Ajouter un commentaire…" class="f-input" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter')addComment(${id})"><button class="btn-p sm" onclick="addComment(${id})">Envoyer</button></div>`:''}
+    </div>`;
+  const ok=document.getElementById('m-ok');ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
+  document.getElementById('m-cancel').style.display='none';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function addComment(rdvId){
+  const inp=document.getElementById(`nc-${rdvId}`);const text=inp.value.trim();if(!text)return;
+  await sb.from('commentaires').insert({rdv_id:rdvId,auteur:cuP?.nom||'?',auteur_couleur:cuP?.couleur||'#6B7280',texte:text});
+  inp.value='';
+  const{data}=await sb.from('commentaires').select('*').eq('rdv_id',rdvId).order('created_at');
+  document.getElementById(`clist-${rdvId}`).innerHTML=(data||[]).map(c=>`<div class="comment"><div class="comment-h"><div class="cav" style="background:${c.auteur_couleur}">${c.auteur.charAt(0)}</div><span class="c-name">${c.auteur}</span><span class="c-date">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div><div class="c-text">${c.texte}</div></div>`).join('');
+  showToast('Commentaire ajouté');
+}
+
+// ══ UTILISATEURS ══
 function renderUsers(){
   const isAdmin=cuP?.role==='admin';
   return`
@@ -831,9 +1191,9 @@ function openAddUser(){
     <div class="fgrp"><label>Mot de passe <span class="req">*</span></label><input type="text" id="au-pwd" placeholder="Motdepasse1!"></div>
     <div class="fgrp"><label>Rôle <span class="req">*</span></label><select id="au-role"><option value="">—</option>${['responsable','employe','transporteur','chauffeur'].map(r=>`<option value="${r}">${ROLE_FR[r]}</option>`).join('')}</select></div>
     <div class="fgrp"><label>Entreprise</label><input type="text" id="au-co"></div>
-    <div class="fgrp"><label>Couleur</label><input type="color" id="au-color" value="#6B7280" style="height:38px;cursor:pointer;padding:2px"></div>
+    <div class="fgrp"><label>Couleur</label><input type="color" id="au-color" value="#2E7D32" style="height:38px;cursor:pointer;padding:2px"></div>
   </div>`;
-  const ok=document.getElementById('m-ok');ok.textContent='Créer';ok.className='m-ok';
+  const ok=document.getElementById('m-ok');ok.textContent='Créer le compte';ok.className='m-ok';
   document.getElementById('m-cancel').style.display='';
   ok.onclick=async()=>{
     const name=document.getElementById('au-name').value.trim(),email=document.getElementById('au-email').value.trim(),pwd=document.getElementById('au-pwd').value.trim(),role=document.getElementById('au-role').value;
@@ -843,7 +1203,7 @@ function openAddUser(){
     if(error){hideLoader();showToast('Erreur: '+error.message,'error');return;}
     await sb.from('profils').insert({id:authData.user.id,nom:name,role,entreprise:document.getElementById('au-co').value.trim(),couleur:document.getElementById('au-color').value});
     const{data}=await sb.from('profils').select('*');USERS=data||[];
-    hideLoader();closeModal();switchView('users');showToast('Compte créé — confirmation email envoyée');
+    hideLoader();closeModal();switchView('users');showToast('Compte créé');
   };
   document.getElementById('modal').classList.add('show');
 }
@@ -867,9 +1227,9 @@ function openEditUser(id){
   };
   document.getElementById('modal').classList.add('show');
 }
-function confirmDelUser(id){const u=USERS.find(u=>u.id===id);showModal('Supprimer ce compte ?',`${u?.nom} sera définitivement supprimé.`,'Supprimer',async()=>{await sb.from('profils').delete().eq('id',id);const{data}=await sb.from('profils').select('*');USERS=data||[];closeModal();switchView('users');showToast('Compte supprimé');},true);}
+function confirmDelUser(id){const u=USERS.find(u=>u.id===id);showModal('Supprimer ce compte ?',`${u?.nom} sera supprimé définitivement.`,'Supprimer',async()=>{await sb.from('profils').delete().eq('id',id);const{data}=await sb.from('profils').select('*');USERS=data||[];closeModal();switchView('users');showToast('Compte supprimé');},true);}
 
-// CHAUFFEURS
+// ══ CHAUFFEURS ══
 function renderDrivers(){
   const drivers=USERS.filter(u=>u.role==='chauffeur'&&u.entreprise===cuP?.entreprise);
   return`
@@ -907,36 +1267,41 @@ function openAddDriver(){
   document.getElementById('modal').classList.add('show');
 }
 
-// PARAMÈTRES
+// ══ PARAMÈTRES ══
 function renderSettings(){
   return`
   <div class="pg-h"><div><h2>Paramètres</h2></div></div>
   <div class="card"><div class="card-h"><h3>🏭 Site de réception</h3></div>
   <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
-    <div class="frow">
-      <div class="fgrp"><label>Nom du site</label><input type="text" value="Sanders Euralis — Vic-en-Bigorre"></div>
-      <div class="fgrp"><label>Téléphone</label><input type="text" value="05 62 38 XX XX"></div>
-      <div class="fgrp"><label>Adresse</label><input type="text" value="193 Impasse Lautrec, 65500 Vic-en-Bigorre"></div>
-      <div class="fgrp"><label>Email</label><input type="email" value="reception@sanders-euralis.fr"></div>
-    </div>
+    <div class="frow"><div class="fgrp"><label>Nom du site</label><input type="text" value="Sanders Euralis — Vic-en-Bigorre"></div><div class="fgrp"><label>Téléphone</label><input type="text" value="05 62 38 XX XX"></div><div class="fgrp"><label>Adresse</label><input type="text" value="193 Impasse Lautrec, 65500 Vic-en-Bigorre"></div><div class="fgrp"><label>Email</label><input type="email" value="reception@sanders-euralis.fr"></div></div>
     <div><div class="fsect"><span class="dot dv"></span>Horaires</div>
-      <div class="frow">
-        <div class="fgrp"><label>Ouverture Lun–Ven</label><input type="time" value="06:00"></div>
-        <div class="fgrp"><label>Fermeture Lun–Ven</label><input type="time" value="18:00"></div>
-        <div class="fgrp"><label>Ouverture Samedi</label><input type="time" value="06:00"></div>
-        <div class="fgrp"><label>Fermeture Samedi</label><input type="time" value="12:00"></div>
-      </div>
+      <div class="frow"><div class="fgrp"><label>Ouverture Lun–Ven</label><input type="time" value="06:00"></div><div class="fgrp"><label>Fermeture Lun–Ven</label><input type="time" value="18:00"></div><div class="fgrp"><label>Ouverture Samedi</label><input type="time" value="06:00"></div><div class="fgrp"><label>Fermeture Samedi</label><input type="time" value="12:00"></div></div>
     </div>
   </div>
   <div class="card-foot"><button class="btn-p" onclick="showToast('Paramètres sauvegardés ✓')">💾 Sauvegarder</button></div>
+  </div>
+  <div class="card"><div class="card-h"><h3>📱 Application mobile (PWA)</h3></div>
+  <div style="padding:16px">
+    <p style="font-size:13px;color:var(--soft);margin-bottom:12px">Installez l'application sur votre téléphone pour un accès rapide sans navigateur.</p>
+    <button class="btn-p" id="pwa-install-btn" onclick="installPWA()" style="display:none">📲 Installer l'application</button>
+    <div id="pwa-status" style="font-size:13px;color:var(--soft)">Vérification…</div>
+  </div>
   </div>`;
+  setTimeout(updatePWAStatus,100);
 }
 
-// ACTIONS
-async function changeStatut(id,statut){showLoader();await sb.from('rdv').update({statut}).eq('id',id);await reloadRdv();hideLoader();switchView(cv);showToast('Statut mis à jour');}
+// ══ ACTIONS ══
+async function changeStatut(id,statut){
+  showLoader();
+  await sb.from('rdv').update({statut}).eq('id',id);
+  await reloadRdv();hideLoader();
+  // Rafraîchir le modal si ouvert
+  if(document.getElementById('modal').classList.contains('show')){closeModal();}
+  switchView(cv);showToast('Statut mis à jour → '+ST[statut]?.lbl);
+}
 function delRdv(id){showModal('Supprimer ce RDV ?','Action irréversible.','Supprimer',async()=>{showLoader();await sb.from('rdv').delete().eq('id',id);await reloadRdv();hideLoader();closeModal();switchView(cv);showToast('RDV supprimé');},true);}
 
-// MODAL
+// ══ MODAL ══
 function showModal(title,desc,okLbl,onOk,danger){
   document.getElementById('modal-box').className='modal-box';
   document.getElementById('m-title').textContent=title;document.getElementById('m-desc').textContent=desc;document.getElementById('m-content').innerHTML='';
@@ -946,7 +1311,45 @@ function showModal(title,desc,okLbl,onOk,danger){
 }
 function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('m-cancel').style.display='';}
 
-// INIT
+// ══ PWA ══
+function initPWA(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/Reception/sw.js').then(()=>console.log('SW registered')).catch(()=>{});
+  }
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredInstall=e;
+    // Afficher banner après 3 secondes si pas déjà installé
+    if(!localStorage.getItem('pwa-dismissed')){
+      setTimeout(showPWABanner,3000);
+    }
+  });
+  window.addEventListener('appinstalled',()=>{
+    deferredInstall=null;hidePWABanner();showToast('✅ Application installée !');
+  });
+}
+function showPWABanner(){
+  if(document.getElementById('pwa-banner'))return;
+  const banner=document.createElement('div');
+  banner.id='pwa-banner';banner.className='pwa-banner';
+  banner.innerHTML=`<div class="pwa-banner-text"><strong>📲 Installer l'app</strong><span>Accès rapide depuis l'écran d'accueil</span></div><button class="pwa-btn" onclick="installPWA()">Installer</button><button class="pwa-close" onclick="hidePWABanner()">✕</button>`;
+  document.body.appendChild(banner);
+}
+function hidePWABanner(){const b=document.getElementById('pwa-banner');if(b)b.remove();localStorage.setItem('pwa-dismissed','1');}
+async function installPWA(){
+  if(!deferredInstall){showToast('Utilisez le menu du navigateur → "Ajouter à l\'écran d\'accueil"','error');return;}
+  deferredInstall.prompt();const{outcome}=await deferredInstall.userChoice;
+  if(outcome==='accepted'){deferredInstall=null;hidePWABanner();}
+}
+function updatePWAStatus(){
+  const btn=document.getElementById('pwa-install-btn');
+  const status=document.getElementById('pwa-status');
+  if(!btn||!status)return;
+  if(window.matchMedia('(display-mode: standalone)').matches){status.textContent='✅ Application déjà installée';return;}
+  if(deferredInstall){btn.style.display='inline-flex';status.textContent='L\'application peut être installée sur cet appareil.';}
+  else{status.textContent='Pour installer : menu du navigateur → "Ajouter à l\'écran d\'accueil" (ou "Installer l\'application").';}
+}
+
+// ══ INIT ══
 (async function init(){
   showLoader('Initialisation…');
   const{data:{session}}=await sb.auth.getSession();
