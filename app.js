@@ -13,6 +13,7 @@ const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','
 const fmt=d=>d.toISOString().split('T')[0];
 const now=new Date();
 const todayStr=fmt(now);
+const tomorrowStr=fmt(new Date(now.getTime()+86400000));
 const ST={attente:{lbl:'En attente',cls:'bo'},planifie:{lbl:'Planifié',cls:'bb'},confirme:{lbl:'Confirmé',cls:'bg'},termine:{lbl:'Terminé',cls:'bgy'},annule:{lbl:'Annulé',cls:'br'}};
 const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4'];
 
@@ -58,13 +59,19 @@ function lastMatiereBeforeSlot(date,creneau){
   return all.length?all[all.length-1].matiere_id:null;
 }
 function checkSlot(date,creneau,matId){
-  if(isBlocked(date,creneau))return{ok:false};
-  if(slotCount(date,creneau)>=MAX_PAR_CRENEAU)return{ok:false};
+  if(isBlocked(date,creneau))return{ok:false,reason:'blocked'};
+  if(slotCount(date,creneau)>=MAX_PAR_CRENEAU)return{ok:false,reason:'full'};
   const res=slotReservedFor(date,creneau);
-  if(res&&res!==matId)return{ok:false};
+  if(res&&res!==matId)return{ok:false,reason:'reserved',mat:res};
   const last=lastMatiereBeforeSlot(date,creneau);
-  if(last&&areIncompat(last,matId))return{ok:false};
+  if(last&&areIncompat(last,matId))return{ok:false,reason:'incompat',last};
   return{ok:true};
+}
+// Matières compatibles avec la précédente pour un créneau donné
+function matiereCompatibles(date,creneau){
+  const last=lastMatiereBeforeSlot(date,creneau);
+  if(!last) return MATIERES.filter(m=>m.actif);
+  return MATIERES.filter(m=>m.actif&&!areIncompat(last,m.id));
 }
 function myRdvs(){
   let l=[...RDV].sort((a,b)=>a.date.localeCompare(b.date)||a.creneau.localeCompare(b.creneau));
@@ -78,7 +85,7 @@ async function quickLogin(email){
   showLoader('Connexion en cours…');
   const{data,error}=await sb.auth.signInWithPassword({email,password:'Demo1234!'});
   if(error){hideLoader();showToast('Erreur de connexion','error');return;}
-  cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');
+  cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');startRealtime();
 }
 
 async function doLogin(){
@@ -90,10 +97,10 @@ async function doLogin(){
   const{data,error}=await sb.auth.signInWithPassword({email,password:pwd});
   btn.textContent='Se connecter';btn.disabled=false;
   if(error){err.textContent='Email ou mot de passe incorrect.';err.classList.add('show');return;}
-  cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');
+  cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');startRealtime();
 }
 async function loadProfil(){const{data}=await sb.from('profils').select('*').eq('id',cu.id).single();cuP=data;}
-async function doLogout(){await sb.auth.signOut();cu=null;cuP=null;cv=null;showPage('home');}
+async function doLogout(){stopRealtime();await sb.auth.signOut();cu=null;cuP=null;cv=null;showPage('home');}
 
 // ══ DATA ══
 async function loadAllData(){
@@ -153,12 +160,20 @@ function renderDash(){
   const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
   const canDel=['admin','responsable'].includes(cuP?.role);
   return`
-  <div class="pg-h"><div><h2>Tableau de bord</h2><p>${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
+  <div class="pg-h">
+    <div><h2>Tableau de bord</h2><p>${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--vert);background:var(--vert-l);padding:4px 10px;border-radius:8px;font-weight:500">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--vert);animation:pulse 2s infinite;display:inline-block"></span>Temps réel
+      </span>
+      <button class="btn-p sm" onclick="printPlanning()">🖨️ Planning du jour</button>
+    </div>
+  </div>
   <div class="stats-grid">
-    <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val" style="color:var(--vert)">${today.length}</div><div class="sc-sub">rendez-vous</div></div>
-    <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à confirmer</div></div>
-    <div class="sc blue"><div class="sc-lbl">À venir</div><div class="sc-val" style="color:var(--blue)">${avenir.length}</div><div class="sc-sub">planifiés</div></div>
-    <div class="sc rouge"><div class="sc-lbl">Tonnage</div><div class="sc-val" style="color:var(--rouge)">${totalT}T</div><div class="sc-sub">traité</div></div>
+    <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val rt-today" style="color:var(--vert)">${today.length}</div><div class="sc-sub">rendez-vous</div></div>
+    <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val rt-attente" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à confirmer</div></div>
+    <div class="sc blue"><div class="sc-lbl">À venir</div><div class="sc-val rt-avenir" style="color:var(--blue)">${avenir.length}</div><div class="sc-sub">planifiés</div></div>
+    <div class="sc rouge"><div class="sc-lbl">Tonnage</div><div class="sc-val rt-tonnage" style="color:var(--rouge)">${totalT}T</div><div class="sc-sub">traité</div></div>
   </div>
   <div class="charts-grid">
     <div class="chart-card"><h3>📦 Tonnes par semaine (8 sem.)</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
@@ -742,7 +757,7 @@ function renderNew(){
   <div class="card"><div class="card-h"><h3>📋 Demande de livraison</h3><p>Les champs <span class="req">*</span> sont obligatoires</p></div>
   <div style="padding:18px;display:flex;flex-direction:column;gap:18px">
     <div><div class="fsect"><span class="dot dr"></span>Date & Horaire</div>
-      <div class="frow"><div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="nf-date" min="${todayStr}" onchange="updateSlots()"></div>
+      <div class="frow"><div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="nf-date" min="${tomorrowStr}" onchange="updateSlots()"></div>
       <div class="fgrp"><label>Créneau <span class="req">*</span></label><select id="nf-cren"><option value="">— Choisir date et matière d'abord —</option></select></div></div>
     </div>
     <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
@@ -760,7 +775,7 @@ function renderNew(){
       <div class="frow"><div class="fgrp"><label>Nom <span class="req">*</span></label><input type="text" id="nf-chauf" value="${isC?cuP?.nom||'':''}" ${isC?'readonly':''} placeholder="Prénom Nom"></div>
       <div class="fgrp"><label>Téléphone <span class="req">*</span></label><input type="tel" id="nf-tel" placeholder="06 00 00 00 00"></div></div>
     </div>
-    <div id="incompat-warn" style="display:none;background:var(--orange-l);border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400E">⚠️ <strong>Attention :</strong> <span id="incompat-msg"></span></div>
+    <div id="compat-info" style="display:none;background:var(--orange-l);border:1px solid #FDE68A;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400E"></div>
   </div>
   <div class="card-foot"><button class="btn-s" onclick="switchView('rdv')">Annuler</button><button class="btn-p" onclick="submitRdv()">✓ Soumettre la demande</button></div>
   </div>`;
@@ -769,21 +784,91 @@ function updateSlots(){
   const date=document.getElementById('nf-date')?.value,matId=document.getElementById('nf-mat')?.value;
   const sel=document.getElementById('nf-cren');if(!sel)return;
   if(!date||!matId){sel.innerHTML='<option value="">— Choisir date et matière d\'abord —</option>';return;}
-  sel.innerHTML='<option value="">— Sélectionner —</option>';
-  CRENEAUX.forEach(c=>{const check=checkSlot(date,c,matId);const opt=document.createElement('option');if(check.ok){opt.value=c;opt.textContent=`${c} (${MAX_PAR_CRENEAU-slotCount(date,c)} place(s))`;}else{opt.value='';opt.disabled=true;opt.textContent=`${c} — Indisponible`;}sel.appendChild(opt);});
+  sel.innerHTML='<option value="">— Sélectionner un créneau —</option>';
+  CRENEAUX.forEach(c=>{
+    const check=checkSlot(date,c,matId);
+    const opt=document.createElement('option');
+    if(check.ok){
+      opt.value=c;
+      opt.textContent=c+' ('+( MAX_PAR_CRENEAU-slotCount(date,c))+' place(s))';
+    } else {
+      opt.value='';opt.disabled=true;
+      let reason='Indisponible';
+      if(check.reason==='blocked') reason='Bloqué';
+      else if(check.reason==='full') reason='Complet';
+      else if(check.reason==='reserved'){const rm=matById(check.mat);reason='Réservé '+( rm?.code||'');}
+      else if(check.reason==='incompat'){const lm=matById(check.last);reason='Incompat. après '+(lm?.code||'');}
+      opt.textContent=c+' — '+reason;
+    }
+    sel.appendChild(opt);
+  });
+  updateCompatWarning(date,matId);
+}
+function updateCompatWarning(date,matId){
+  const warn=document.getElementById('compat-info');if(!warn)return;
+  // Vérifier si la matière choisie a des restrictions sur cette date
+  const restrictions=[];
+  CRENEAUX.forEach(c=>{
+    const check=checkSlot(date,c,matId);
+    if(!check.ok&&check.reason==='incompat'){
+      const lm=matById(check.last);
+      if(lm&&!restrictions.find(r=>r.id===lm.id)) restrictions.push(lm);
+    }
+  });
+  if(restrictions.length>0){
+    warn.style.display='block';
+    warn.innerHTML='⚠️ Certains créneaux sont bloqués : <strong>'+matById(matId)?.nom+'</strong> ne peut pas suivre <strong>'+restrictions.map(m=>m.nom).join(', ')+'</strong>. Choisissez un créneau libre.';
+  } else {
+    warn.style.display='none';
+  }
 }
 async function submitRdv(){
   const ids=['nf-date','nf-cren','nf-mat','nf-ton','nf-bl','nf-trans','nf-immat','nf-chauf','nf-tel'];
   let ok=true;ids.forEach(id=>{const el=document.getElementById(id);if(!el||!el.value.trim()){if(el)el.style.borderColor='var(--rouge)';ok=false;}else if(el)el.style.borderColor='';});
   if(!ok){showToast('Veuillez remplir tous les champs obligatoires','error');return;}
-  const date=document.getElementById('nf-date').value,cren=document.getElementById('nf-cren').value,matId=document.getElementById('nf-mat').value;
-  if(!checkSlot(date,cren,matId).ok){showToast('Créneau indisponible pour cette matière','error');return;}
+  const date=document.getElementById('nf-date').value;
+  const cren=document.getElementById('nf-cren').value;
+  const matId=document.getElementById('nf-mat').value;
+  // Bloquer le jour J
+  if(date<=todayStr){showToast('Les RDV doivent être pris minimum la veille','error');return;}
+  const check=checkSlot(date,cren,matId);
+  if(!check.ok){
+    if(check.reason==='incompat'){
+      const lm=matById(check.last);
+      showToast('Incompatible après '+( lm?.nom||'?')+' — choisissez un autre créneau','error');
+    } else {
+      showToast('Créneau indisponible','error');
+    }
+    return;
+  }
   const m=matById(matId);
   showLoader('Enregistrement…');
-  const{error}=await sb.from('rdv').insert({date,creneau:cren,matiere_id:matId,matiere_nom:m?.nom||'',tonnage:parseInt(document.getElementById('nf-ton').value),bl:document.getElementById('nf-bl').value,transporteur:document.getElementById('nf-trans').value,immat:document.getElementById('nf-immat').value,chauffeur:document.getElementById('nf-chauf').value,tel:document.getElementById('nf-tel').value,statut:'attente',user_id:cu.id});
+  // Confirmation automatique directe
+  const{data:inserted,error}=await sb.from('rdv').insert({
+    date,creneau:cren,matiere_id:matId,matiere_nom:m?.nom||'',
+    tonnage:parseInt(document.getElementById('nf-ton').value),
+    bl:document.getElementById('nf-bl').value,
+    transporteur:document.getElementById('nf-trans').value,
+    immat:document.getElementById('nf-immat').value,
+    chauffeur:document.getElementById('nf-chauf').value,
+    tel:document.getElementById('nf-tel').value,
+    statut:'confirme', // ← CONFIRMATION AUTOMATIQUE
+    user_id:cu.id
+  }).select().single();
+  // Verrouiller le créneau SUIVANT pour une matière compatible uniquement
+  if(inserted) await lockNextSlotForCompat(date,cren,matId);
   hideLoader();
   if(error){showToast('Erreur: '+error.message,'error');return;}
-  await reloadRdv();showToast('✅ Demande envoyée ! Confirmation sous 24h.');switchView('rdv');
+  await reloadRdv();
+  showToast('✅ RDV confirmé automatiquement pour le '+date+' — '+cren);
+  switchView('rdv');
+}
+
+// Après un RDV confirmé, réserver le créneau suivant pour matières compatibles uniquement
+async function lockNextSlotForCompat(date,creneau,matId){
+  // On ne verrouille pas physiquement mais on utilise le système d'incompatibilité existant
+  // La logique checkSlot s'occupe déjà de bloquer les incompatibles au créneau suivant
+  // Rien à faire : lastMatiereBeforeSlot retournera cette matière pour le prochain créneau
 }
 
 // ══ DÉTAIL RDV ══
@@ -1313,14 +1398,125 @@ function updatePWAStatus(){
   else{status.textContent='Pour installer : menu du navigateur → "Ajouter à l\'écran d\'accueil" (ou "Installer l\'application").';}
 }
 
+// ══ TEMPS RÉEL ══
+let realtimeInterval=null;
+function startRealtime(){
+  stopRealtime();
+  realtimeInterval=setInterval(async()=>{
+    await reloadRdv();
+    // Mettre à jour le compteur dans la nav si on est sur le dash
+    if(cv==='dash'){
+      const enAtt=myRdvs().filter(r=>r.statut==='attente'||r.statut==='confirme'&&r.date===todayStr).length;
+      const badge=document.getElementById('rt-badge');
+      if(badge) badge.textContent=enAtt>0?enAtt:'';
+      // Rafraîchir les stats sans reconstruire tout le dashboard
+      refreshDashStats();
+    }
+    if(cv==='rdv') switchView('rdv');
+    if(cv==='cal') renderCalContent();
+  },30000); // 30 secondes
+}
+function stopRealtime(){
+  if(realtimeInterval){clearInterval(realtimeInterval);realtimeInterval=null;}
+}
+function refreshDashStats(){
+  const all=myRdvs();
+  const today=all.filter(r=>r.date===todayStr);
+  const enAtt=all.filter(r=>r.statut==='attente');
+  const avenir=all.filter(r=>r.date>todayStr);
+  const totalT=all.filter(r=>r.statut==='termine'||r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
+  const els={'.rt-today':today.length,'.rt-attente':enAtt.length,'.rt-avenir':avenir.length,'.rt-tonnage':totalT+'T'};
+  Object.entries(els).forEach(([sel,val])=>{const el=document.querySelector(sel);if(el)el.textContent=val;});
+}
+
+// ══ PLANNING JOURNÉE IMPRIMABLE ══
+function printPlanning(date){
+  const d=date||todayStr;
+  const rdvsDay=myRdvs().filter(r=>r.date===d).sort((a,b)=>CRENEAUX.indexOf(a.creneau)-CRENEAUX.indexOf(b.creneau));
+  const totalT=rdvsDay.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+  const dateLabel=new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;padding:24px;color:#1E1E1E;font-size:13px}
+  .header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #2E7D32;padding-bottom:12px;margin-bottom:20px}
+  .header h1{font-size:20px;color:#2E7D32;margin:0}
+  .header .meta{text-align:right;font-size:12px;color:#6B7280}
+  .kpis{display:flex;gap:16px;margin-bottom:20px}
+  .kpi{flex:1;background:#F8F6F2;border-radius:8px;padding:12px;text-align:center;border:1px solid #E8E4DE}
+  .kpi-v{font-size:22px;font-weight:700;color:#2E7D32}
+  .kpi-l{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th{background:#F8F6F2;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6B7280;border-bottom:2px solid #E8E4DE}
+  td{padding:9px 10px;border-bottom:1px solid #F0EDE8;vertical-align:middle}
+  tr:hover td{background:#FAFAF8}
+  .badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600}
+  .bg{background:#f0f7f0;color:#2E7D32}.bb{background:#EFF6FF;color:#2563EB}.bo{background:#FFF7E6;color:#D97706}.br{background:#fdf0f2;color:#C8102E}.bgy{background:#F3F4F6;color:#6B7280}
+  .mat-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+  .creneau-row{background:#f0f7f0!important}
+  .empty-slot{color:#9CA3AF;font-style:italic;font-size:12px}
+  .footer{margin-top:24px;padding-top:12px;border-top:1px solid #E8E4DE;font-size:11px;color:#9CA3AF;display:flex;justify-content:space-between}
+  @media print{body{padding:16px}.no-print{display:none}}
+</style></head><body>
+<div class="header">
+  <div>
+    <h1>📋 Planning Réception — ${dateLabel}</h1>
+    <div style="font-size:12px;color:#6B7280;margin-top:4px">Sanders Euralis · Site de Vic-en-Bigorre</div>
+  </div>
+  <div class="meta">
+    Imprimé le ${new Date().toLocaleString('fr-FR',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}<br>
+    <strong>${rdvsDay.filter(r=>r.statut!=='annule').length} livraison(s) · ${totalT}T</strong>
+  </div>
+</div>
+<div class="kpis">
+  <div class="kpi"><div class="kpi-v">${rdvsDay.filter(r=>r.statut!=='annule').length}</div><div class="kpi-l">Livraisons</div></div>
+  <div class="kpi"><div class="kpi-v">${totalT}T</div><div class="kpi-l">Tonnage total</div></div>
+  <div class="kpi"><div class="kpi-v">${rdvsDay.filter(r=>r.statut==='confirme').length}</div><div class="kpi-l">Confirmés</div></div>
+  <div class="kpi"><div class="kpi-v">${rdvsDay.filter(r=>r.statut==='annule').length}</div><div class="kpi-l">Annulés</div></div>
+</div>
+<table>
+  <thead><tr><th>Créneau</th><th>Matière</th><th>Code</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>Immat.</th><th>Tél.</th><th>N° BL</th><th>Statut</th></tr></thead>
+  <tbody>
+  ${CRENEAUX.map(cren=>{
+    const rdvsCren=rdvsDay.filter(r=>r.creneau===cren);
+    const blk=isBlocked(d,cren);
+    if(blk) return '<tr><td style="font-weight:600;color:#C8102E">'+cren+'</td><td colspan="9" style="color:#C8102E;font-style:italic">🔒 Créneau bloqué</td></tr>';
+    if(rdvsCren.length===0) return '<tr><td style="font-weight:600;color:#9CA3AF">'+cren+'</td><td colspan="9" class="empty-slot">Aucune livraison</td></tr>';
+    return rdvsCren.map((r,i)=>{
+      const m=matById(r.matiere_id);
+      const stMap={attente:'bo',planifie:'bb',confirme:'bg',termine:'bgy',annule:'br'};
+      const stLbl={attente:'En attente',planifie:'Planifié',confirme:'Confirmé',termine:'Terminé',annule:'Annulé'};
+      return '<tr>'
+        +(i===0?'<td rowspan="'+rdvsCren.length+'" style="font-weight:700;border-right:2px solid #E8E4DE">'+cren+'</td>':'')
+        +'<td><span class="mat-dot" style="background:'+(m?.couleur||'#ccc')+'"></span>'+(m?.nom||r.matiere_nom)+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+(m?.code||'—')+'</td>'
+        +'<td><strong>'+r.tonnage+'T</strong></td>'
+        +'<td>'+r.transporteur+'</td>'
+        +'<td>'+r.chauffeur+'</td>'
+        +'<td style="font-size:11px">'+r.immat+'</td>'
+        +'<td style="font-size:11px">'+r.tel+'</td>'
+        +'<td style="font-family:monospace;font-size:11px">'+r.bl+'</td>'
+        +'<td><span class="badge '+(stMap[r.statut]||'bgy')+'">'+(stLbl[r.statut]||r.statut)+'</span></td>'
+        +'</tr>';
+    }).join('');
+  }).join('')}
+  </tbody>
+</table>
+<div class="footer">
+  <span>Sanders Euralis · 193 Impasse Lautrec, 65500 Vic-en-Bigorre</span>
+  <span>Document généré automatiquement — ne pas modifier</span>
+</div>
+<script>window.onload=()=>window.print();</script>
+</body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
 // ══ INIT ══
 (async function init(){
   showLoader('Initialisation…');
   const{data:{session}}=await sb.auth.getSession();
   if(session){cu=session.user;await loadProfil();await loadAllData();
-    // Appliquer les horaires sauvegardés
     const cfg=loadConfig();
     if(cfg.lv_open) rebuildCreneaux(cfg);
-    buildDash();showPage('dash');}
+    buildDash();showPage('dash');startRealtime();}
   else{hideLoader();showPage('home');}
 })();
