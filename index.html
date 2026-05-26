@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2E7D32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Réception SE">
+<link rel="manifest" href="manifest.json">
+<title>Sanders Euralis – Réception Matières Premières</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="loader-overlay" id="loader"><div class="spinner"></div><div class="loader-text">Chargement…</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ACCUEIL -->
+<div id="pg-home" class="page active">
+  <div class="home-wrap">
+    <div class="home-logos">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:60px;object-fit:contain">
+    </div>
+    <h1>Réception<br><em>Matières Premières</em></h1>
+    <div class="home-divider"></div>
+    <p>Portail de gestion des rendez-vous de livraison.<br>Site de <strong>Vic-en-Bigorre</strong> — Hautes-Pyrénées.</p>
+    <div class="home-infos">
+      <div class="hi"><div class="hiv">6h–18h</div><div class="hil">Réception</div></div>
+      <div class="hi"><div class="hiv">Lun–Sam</div><div class="hil">Ouvert</div></div>
+      <div class="hi"><div class="hiv">24h</div><div class="hil">Confirmation</div></div>
+    </div>
+    <button class="btn-home" onclick="showPage('login')">Accéder à l'espace privé →</button>
+    <div class="home-note">📍 193 Impasse Lautrec, 65500 Vic-en-Bigorre &nbsp;·&nbsp; <a href="tel:0562380000">05 62 38 XX XX</a></div>
+
+    <!-- DÉMO -->
+    <div style="width:100%;margin-top:28px;border:1.5px dashed #C8102E55;border-radius:12px;overflow:hidden;background:#fff">
+      <div style="background:var(--rouge-l);padding:10px 16px;border-bottom:1px solid #C8102E22;display:flex;align-items:center;gap:7px">
+        <span style="font-size:13px">🎯</span>
+        <span style="font-size:12px;font-weight:700;color:var(--rouge);letter-spacing:.5px;text-transform:uppercase">Comptes démo — cliquez pour vous connecter</span>
+      </div>
+      <div id="demo-accounts">
+        <div onclick="quickLogin('responsable@demo.fr')" class="demo-row">
+          <div class="demo-av" style="background:#2E7D32">👩‍💼</div>
+          <div class="demo-info"><div class="demo-nom">Marie Lefebvre</div><div class="demo-sub">Responsable · responsable@demo.fr</div></div>
+          <span class="demo-badge" style="color:#2E7D32;background:#2E7D3218">Responsable</span>
+        </div>
+        <div onclick="quickLogin('employe@demo.fr')" class="demo-row">
+          <div class="demo-av" style="background:#2563EB">👨‍💻</div>
+          <div class="demo-info"><div class="demo-nom">Thomas Garnier</div><div class="demo-sub">Employé · employe@demo.fr</div></div>
+          <span class="demo-badge" style="color:#2563EB;background:#2563EB18">Employé</span>
+        </div>
+        <div onclick="quickLogin('transporteur@demo.fr')" class="demo-row">
+          <div class="demo-av" style="background:#D97706">🚛</div>
+          <div class="demo-info"><div class="demo-nom">Pierre Dupont</div><div class="demo-sub">Transporteur · transporteur@demo.fr</div></div>
+          <span class="demo-badge" style="color:#D97706;background:#D9770618">Transporteur</span>
+        </div>
+        <div onclick="quickLogin('chauffeur@demo.fr')" class="demo-row">
+          <div class="demo-av" style="background:#F97316">🚜</div>
+          <div class="demo-info"><div class="demo-nom">Jean-Paul Martin</div><div class="demo-sub">Chauffeur · chauffeur@demo.fr</div></div>
+          <span class="demo-badge" style="color:#F97316;background:#F9731618">Chauffeur</span>
+        </div>
+      </div>
+      <div style="background:var(--bg);padding:9px 16px;text-align:center;border-top:1px solid var(--border)">
+        <span style="font-size:11px;color:var(--muted)">Mot de passe universel : <strong style="color:var(--text);font-family:monospace;letter-spacing:.5px">Demo1234!</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="pg-login" class="page">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-top">
+        <div class="l-logos">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:55px;object-fit:contain">
+        </div>
+        <h2>Connexion</h2>
+        <p>Réception Matières Premières — Vic-en-Bigorre</p>
+      </div>
+      <div class="login-body">
+        <div class="login-err" id="l-err"></div>
+        <div class="lg"><label>Email</label><input type="email" id="l-email" placeholder="votre@email.fr" autocomplete="email"></div>
+        <div class="lg"><label>Mot de passe</label><input type="password" id="l-pwd" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn-login" id="btn-login-submit" onclick="doLogin()">Se connecter</button>
+      </div>
+      <div class="login-back"><button onclick="showPage('home')">← Retour à l'accueil</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="pg-dash" class="page">
+  <nav class="dash-nav">
+    <div class="dash-nav-in">
+      <div class="d-logos">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:40px;object-fit:contain">
+      </div>
+      <div class="d-tabs" id="d-tabs"></div>
+      <div class="d-right">
+        <div class="user-chip"><div class="u-av" id="d-av"></div><div><div class="u-name" id="d-name"></div><div class="u-role" id="d-role-lbl"></div></div></div>
+        <button class="btn-out" onclick="doLogout()">Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+  <div class="dash-body" id="dash-body"></div>
+</div>
+
+<div class="bottom-nav" id="bottom-nav"><div class="bottom-nav-inner" id="bn-inner"></div></div>
+
+<div class="modal-ov" id="modal">
+  <div class="modal-box" id="modal-box">
+    <h3 id="m-title"></h3><p class="m-desc" id="m-desc"></p>
+    <div id="m-content"></div>
+    <div class="modal-actions">
+      <button class="m-cancel" id="m-cancel" onclick="closeModal()">Annuler</button>
+      <button class="m-ok" id="m-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
