@@ -762,7 +762,7 @@ function renderNew(){
     </div>
     <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
       <div class="frow"><div class="fgrp"><label>Matière <span class="req">*</span></label>
-        <select id="nf-mat" onchange="updateSlots()">${['Céréales','Oléagineux','Légumineuses','Autre'].map(cat=>{const ms=MATIERES.filter(m=>m.actif&&m.categorie===cat);return ms.length?`<optgroup label="${cat}">${ms.map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</optgroup>`:''}).join('')}</select>
+        <select id="nf-mat" onchange="updateSlots()"><option value="">— Sélectionner —</option>${[...new Set(MATIERES.filter(m=>m.actif).map(m=>m.categorie))].map(cat=>{const ms=MATIERES.filter(m=>m.actif&&m.categorie===cat);return ms.length?`<optgroup label="${cat}">${ms.map(m=>`<option value="${m.id}">[${m.code}] ${m.nom}</option>`).join('')}</optgroup>`:''}).join('')}</select>
       </div>
       <div class="fgrp"><label>Tonnage (T) <span class="req">*</span></label><input type="number" id="nf-ton" placeholder="Ex: 26" min="1" max="40"></div></div>
       <div class="fgrp" style="margin-top:11px"><label>N° bon de livraison <span class="req">*</span></label><input type="text" id="nf-bl" placeholder="BL-2024-00XXX"></div>
