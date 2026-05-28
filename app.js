@@ -100,6 +100,87 @@ async function doLogin(){
   cu=data.user;await loadProfil();await loadAllData();buildDash();showPage('dash');startRealtime();
 }
 async function loadProfil(){const{data}=await sb.from('profils').select('*').eq('id',cu.id).single();cuP=data;}
+function openProfil(){
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='👤 Mon profil';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <!-- Infos profil -->
+    <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:10px;margin-bottom:16px">
+      <div style="width:48px;height:48px;border-radius:50%;background:${cuP?.couleur||'#6B7280'};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0">${cuP?.nom?.charAt(0)||'?'}</div>
+      <div>
+        <div style="font-size:15px;font-weight:600">${cuP?.nom||''}</div>
+        <div style="font-size:12px;color:var(--soft)">${ROLE_FR[cuP?.role]||''} ${cuP?.entreprise?'· '+cuP.entreprise:''}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${cu?.email||''}</div>
+      </div>
+    </div>
+
+    <!-- Changer mot de passe -->
+    <div style="border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:12px">🔒 Changer le mot de passe</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="fgrp">
+          <label>Nouveau mot de passe <span class="req">*</span></label>
+          <input type="password" id="pwd-new" placeholder="Minimum 6 caractères" autocomplete="new-password">
+        </div>
+        <div class="fgrp">
+          <label>Confirmer le mot de passe <span class="req">*</span></label>
+          <input type="password" id="pwd-confirm" placeholder="Répéter le mot de passe" autocomplete="new-password" onkeydown="if(event.key==='Enter')savePwd()">
+        </div>
+        <div id="pwd-err" style="display:none;background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--rouge)"></div>
+        <div id="pwd-ok" style="display:none;background:var(--vert-l);border:1px solid var(--vert-m);border-radius:7px;padding:8px 12px;font-size:12.5px;color:var(--vert)">✅ Mot de passe mis à jour !</div>
+      </div>
+    </div>
+
+    <!-- Couleur avatar -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:12px">🎨 Couleur de l'avatar</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input type="color" id="profil-color" value="${cuP?.couleur||'#6B7280'}" style="height:38px;width:60px;cursor:pointer;padding:2px;border:1.5px solid var(--border);border-radius:8px">
+        <span style="font-size:13px;color:var(--soft)">Visible par tous dans les commentaires</span>
+      </div>
+    </div>`;
+
+  const ok = document.getElementById('m-ok');
+  ok.textContent = 'Enregistrer';
+  ok.className = 'm-ok';
+  ok.onclick = saveProfil;
+  document.getElementById('m-cancel').style.display = '';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function savePwd(){
+  const pwdNew = document.getElementById('pwd-new')?.value;
+  const pwdConf = document.getElementById('pwd-confirm')?.value;
+  const errEl = document.getElementById('pwd-err');
+  const okEl = document.getElementById('pwd-ok');
+  if(!pwdNew||!pwdConf) return;
+  if(pwdNew.length<6){errEl.textContent='Le mot de passe doit faire au moins 6 caractères.';errEl.style.display='block';okEl.style.display='none';return;}
+  if(pwdNew!==pwdConf){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.style.display='block';okEl.style.display='none';return;}
+  errEl.style.display='none';
+  const{error}=await sb.auth.updateUser({password:pwdNew});
+  if(error){errEl.textContent='Erreur : '+error.message;errEl.style.display='block';return;}
+  okEl.style.display='block';
+  document.getElementById('pwd-new').value='';
+  document.getElementById('pwd-confirm').value='';
+}
+
+async function saveProfil(){
+  const color = document.getElementById('profil-color')?.value;
+  // Sauvegarder couleur
+  if(color && color !== cuP?.couleur){
+    await sb.from('profils').update({couleur:color}).eq('id',cu.id);
+    cuP.couleur = color;
+    // Mettre à jour l'avatar dans la nav
+    const av = document.getElementById('d-av');
+    if(av) av.style.background = color;
+  }
+  // Changer mot de passe si rempli
+  const pwdNew = document.getElementById('pwd-new')?.value;
+  if(pwdNew) await savePwd();
+  else { showToast('Profil mis à jour ✅'); closeModal(); }
+}
+
 async function doLogout(){stopRealtime();await sb.auth.signOut();cu=null;cuP=null;cv=null;showPage('home');}
 
 // ══ DATA ══

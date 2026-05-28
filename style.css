@@ -88,7 +88,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .d-tab:hover{background:var(--bg);color:var(--text);}
 .d-tab.active{background:var(--vert-l);color:var(--vert);font-weight:600;}
 .d-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;}
+.user-chip{display:flex;align-items:center;gap:7px;padding:4px 10px 4px 5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;transition:border-color .15s,background .15s;}
+.user-chip:hover{border-color:var(--vert);background:var(--vert-l);}
 .u-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
 .u-name{font-weight:600;font-size:12.5px;line-height:1.2;}
 .u-role{font-size:10.5px;color:var(--soft);}
