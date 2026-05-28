@@ -331,38 +331,54 @@ function renderRDV(){
 
 // ══ CALENDRIER ══
 function renderCal(){
+  const canNew=['admin','responsable','employe'].includes(cuP?.role);
   return`
-  <div class="pg-h"><div><h2>🗓 Calendrier</h2></div>
+  <div class="pg-h">
+    <div><h2>🗓 Calendrier</h2></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <div class="cal-view-tabs">
         <button class="cal-view-tab${calView==='month'?' active':''}" onclick="setCalView('month')">Mois</button>
         <button class="cal-view-tab${calView==='week'?' active':''}" onclick="setCalView('week')">Semaine</button>
+        <button class="cal-view-tab${calView==='day'?' active':''}" onclick="setCalView('day')">Jour</button>
       </div>
-      <button class="btn-p sm" onclick="switchView('new')">+ Nouveau RDV</button>
+      ${canNew?`<button class="btn-p sm" onclick="switchView('new')">+ Nouveau RDV</button>`:''}
+      <button class="btn-p sm" style="background:var(--soft)" onclick="printPlanning(calView==='day'?fmt(calDate):todayStr)">🖨️ Imprimer</button>
     </div>
   </div>
-  <div class="card">
+  <div class="card" style="overflow:visible">
     <div class="card-h">
-      <div class="cal-nav" style="width:100%;margin:0">
-        <div class="cal-nav-btns">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap">
+        <div style="display:flex;gap:4px">
           <button class="btn-s sm" onclick="calPrev()">◀</button>
           <button class="btn-s sm" onclick="calToday()">Aujourd'hui</button>
           <button class="btn-s sm" onclick="calNext()">▶</button>
         </div>
-        <h3 id="cal-title"></h3>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11px;align-items:center">
-          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:var(--vert-l);border:1px solid var(--vert);display:inline-block"></span>RDV</span>
-          <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 3px,#fff 3px,#fff 6px);border:1px solid #fca5a5;display:inline-block"></span>Bloqué</span>
+        <h3 id="cal-title" style="flex:1;text-align:center;font-family:'Lora',serif;font-size:17px"></h3>
+        <div style="display:flex;gap:6px;font-size:11px;align-items:center;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:var(--vert);display:inline-block"></span>Confirmé</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:var(--orange);display:inline-block"></span>En attente</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 3px,#fff 3px,#fff 6px);display:inline-block"></span>Bloqué</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#FDE68A;display:inline-block"></span>⚠️ Incompat.</span>
         </div>
       </div>
     </div>
-    <div class="card-body" id="cal-body" style="padding:12px"></div>
+    <div id="cal-body" style="overflow-x:auto"></div>
   </div>`;
 }
 
 function setCalView(v){calView=v;switchView('cal');}
-function calPrev(){if(calView==='month'){calDate.setMonth(calDate.getMonth()-1);}else{calDate.setDate(calDate.getDate()-7);}renderCalContent();}
-function calNext(){if(calView==='month'){calDate.setMonth(calDate.getMonth()+1);}else{calDate.setDate(calDate.getDate()+7);}renderCalContent();}
+function calPrev(){
+  if(calView==='month'){calDate.setMonth(calDate.getMonth()-1);}
+  else if(calView==='day'){calDate.setDate(calDate.getDate()-1);}
+  else{calDate.setDate(calDate.getDate()-7);}
+  renderCalContent();
+}
+function calNext(){
+  if(calView==='month'){calDate.setMonth(calDate.getMonth()+1);}
+  else if(calView==='day'){calDate.setDate(calDate.getDate()+1);}
+  else{calDate.setDate(calDate.getDate()+7);}
+  renderCalContent();
+}
 function calToday(){calDate=new Date();renderCalContent();}
 
 function renderCalContent(){
@@ -370,9 +386,11 @@ function renderCalContent(){
   const bodyEl=document.getElementById('cal-body');
   if(!titleEl||!bodyEl)return;
   if(calView==='month')renderCalMonth(titleEl,bodyEl);
+  else if(calView==='day')renderCalDay(titleEl,bodyEl);
   else renderCalWeek(titleEl,bodyEl);
 }
 
+// ══ VUE MOIS — macro, barre couleur + nb camions ══
 function renderCalMonth(titleEl,bodyEl){
   const y=calDate.getFullYear(),mo=calDate.getMonth();
   titleEl.textContent=`${MOIS[mo]} ${y}`;
@@ -380,33 +398,52 @@ function renderCalMonth(titleEl,bodyEl){
   let startDow=first.getDay();startDow=startDow===0?6:startDow-1;
   const daysInMonth=new Date(y,mo+1,0).getDate();
   const cells=[];
-  // Jours mois précédent
   const prevDays=new Date(y,mo,0).getDate();
   for(let i=startDow-1;i>=0;i--)cells.push({day:prevDays-i,month:'prev',date:fmt(new Date(y,mo-1,prevDays-i))});
   for(let d=1;d<=daysInMonth;d++)cells.push({day:d,month:'cur',date:fmt(new Date(y,mo,d))});
   while(cells.length%7!==0)cells.push({day:cells.length-daysInMonth-startDow+1,month:'next',date:''});
 
-  bodyEl.innerHTML=`
+  bodyEl.innerHTML=`<div style="padding:10px">
     <div class="cal-grid">
       ${JOURS.map(j=>`<div class="cal-head">${j}</div>`).join('')}
       ${cells.map(c=>{
-        const rdvsDay=myRdvs().filter(r=>r.date===c.date);
+        const rdvsDay=RDV.filter(r=>r.date===c.date&&r.statut!=='annule');
         const blkDay=CRENEAUX.some(cr=>isBlocked(c.date,cr));
         const isToday=c.date===todayStr;
-        const cls=['cal-day',c.month!=='cur'?'other-month':'',isToday?'today':'',rdvsDay.length>0?'has-rdv':''].filter(Boolean).join(' ');
-        const pills=rdvsDay.slice(0,2).map(r=>{const m=matById(r.matiere_id);return`<div class="cal-pill" style="background:${m?.couleur||'#6B7280'}22;color:${m?.couleur||'#6B7280'};border:1px solid ${m?.couleur||'#6B7280'}44" onclick="openDetail(${r.id})">${m?.code||'?'} ${r.tonnage}T</div>`;}).join('');
-        const more=rdvsDay.length>2?`<div class="cal-more">+${rdvsDay.length-2} autre(s)</div>`:'';
-        return`<div class="${cls}" onclick="calDayClick('${c.date}')">
-          <div class="cal-day-num"><span>${c.day}</span>${isToday?'<span class="today-dot"></span>':''}</div>
-          ${blkDay?`<div style="font-size:9px;color:var(--rouge);font-weight:600">🔒 Bloqué</div>`:''}
-          ${pills}${more}
+        const nb=rdvsDay.length;
+        const totalT=rdvsDay.reduce((s,r)=>s+r.tonnage,0);
+        // Couleur dominante = matière la plus livrée
+        const matCount={};rdvsDay.forEach(r=>matCount[r.matiere_id]=(matCount[r.matiere_id]||0)+1);
+        const domMat=Object.entries(matCount).sort((a,b)=>b[1]-a[1])[0]?.[0];
+        const domColor=matById(domMat)?.couleur||'#2E7D32';
+        // Incompatibilité demain ?
+        const lastRdv=rdvsDay.sort((a,b)=>CRENEAUX.indexOf(b.creneau)-CRENEAUX.indexOf(a.creneau))[0];
+        const hasIncompat=lastRdv&&INCOMPATS.some(i=>i.matiere_a===lastRdv.matiere_id||i.matiere_b===lastRdv.matiere_id);
+
+        const cls=['cal-month-day',c.month!=='cur'?'other-month':'',isToday?'today':''].filter(Boolean).join(' ');
+        return`<div class="${cls}" onclick="calGoDay('${c.date}')">
+          <div class="cmd-num">${c.day}${isToday?'<span class="cmd-today-dot"></span>':''}</div>
+          ${blkDay?`<div class="cmd-blocked">🔒 Fermé</div>`:nb>0?`
+            <div class="cmd-bar" style="background:${domColor}">
+              <span class="cmd-nb">${nb} 🚛</span>
+              <span class="cmd-t">${totalT}T</span>
+            </div>
+            ${hasIncompat?`<div class="cmd-warn">⚠️ Restr. J+1</div>`:''}
+          `:''}
         </div>`;
       }).join('')}
-    </div>`;
+    </div>
+  </div>`;
 }
 
+function calGoDay(date){
+  calDate=new Date(date+'T12:00:00');
+  calView='day';
+  switchView('cal');
+}
+
+// ══ VUE SEMAINE — grille créneaux × jours détaillée ══
 function renderCalWeek(titleEl,bodyEl){
-  // Trouver le lundi de la semaine
   const d=new Date(calDate);
   const dow=d.getDay();const diff=dow===0?-6:1-dow;
   d.setDate(d.getDate()+diff);
@@ -414,64 +451,131 @@ function renderCalWeek(titleEl,bodyEl){
   titleEl.textContent=`Semaine du ${weekDays[0].day} ${MOIS[weekDays[0].month].substring(0,3)}. au ${weekDays[6].day} ${MOIS[weekDays[6].month].substring(0,3)}.`;
 
   const rows=CRENEAUX.map(cr=>`
-    <div class="cal-slot-label">${cr.replace('–','\n')}</div>
+    <div class="cal-slot-label">${cr.replace('–','–
+')}</div>
     ${weekDays.map(wd=>{
       const blk=isBlocked(wd.date,cr);
-      const rdvsSlot=myRdvs().filter(r=>r.date===wd.date&&r.creneau===cr);
-      const cnt=slotCount(wd.date,cr);
+      const rdvsSlot=RDV.filter(r=>r.date===wd.date&&r.creneau===cr&&r.statut!=='annule');
+      const cnt=rdvsSlot.length;
       const full=cnt>=MAX_PAR_CRENEAU;
       const isToday=wd.date===todayStr;
+      // Vérif incompatibilité avec créneau précédent
+      const lastM=lastMatiereBeforeSlot(wd.date,cr);
+      const lastMObj=lastM?matById(lastM):null;
       let cls='cal-slot-cell';
       if(blk)cls+=' blocked';else if(full)cls+=' full';
       if(isToday)cls+=' today-col';
-      const chips=rdvsSlot.map(r=>{const m=matById(r.matiere_id);return`<div class="cal-rdv-chip" style="background:${m?.couleur||'#6B7280'}22;color:${m?.couleur||'#6B7280'};border:1px solid ${m?.couleur||'#6B7280'}44" onclick="event.stopPropagation();openDetail(${r.id})"><span>${m?.code||'?'}</span><span>${r.tonnage}T</span></div>`;}).join('');
-      return`<div class="${cls}" onclick="calDayClick('${wd.date}')">${blk?'<div style="font-size:9px;color:var(--rouge);font-weight:600;text-align:center;padding:4px">🔒</div>':chips}</div>`;
+      if(blk) return`<div class="${cls}"><div style="font-size:10px;color:var(--rouge);font-weight:600;text-align:center;padding:6px">🔒<br>Fermé</div></div>`;
+      const chips=rdvsSlot.map(r=>{
+        const m=matById(r.matiere_id);
+        const stColor=r.statut==='confirme'?m?.couleur||'#2E7D32':r.statut==='attente'?'#D97706':'#9CA3AF';
+        return`<div class="cal-week-chip" style="background:${stColor}14;border-left:3px solid ${stColor}" onclick="event.stopPropagation();openDetail(${r.id})">
+          <div class="cwc-mat">${m?.code||'?'}</div>
+          <div class="cwc-info">${r.tonnage}T · ${r.transporteur.split(' ')[r.transporteur.split(' ').length-1]}</div>
+          ${r.statut==='attente'?'<div class="cwc-warn">En attente</div>':''}
+        </div>`;}).join('');
+      const emptyInfo=cnt===0&&lastMObj?`<div class="cal-slot-prev">↑ ${lastMObj.code}</div>`:'';
+      const slotBg=cnt>=MAX_PAR_CRENEAU?'var(--rouge-l)':'var(--vert-l)';
+      const slotColor=cnt>=MAX_PAR_CRENEAU?'var(--rouge)':'var(--vert)';
+      const countBadge=cnt>0?`<div class="cal-slot-count" style="background:${slotBg};color:${slotColor}">${cnt}/${MAX_PAR_CRENEAU}</div>`:'';
+      return`<div class="${cls}" onclick="calDayClick('${wd.date}')">
+        ${countBadge}
+        ${chips}
+        ${emptyInfo}
+      </div>`;
     }).join('')}`).join('');
 
+  // Header avec total par jour
+  const dayHeaders=weekDays.map(wd=>{
+    const nb=RDV.filter(r=>r.date===wd.date&&r.statut!=='annule').length;
+    const t=RDV.filter(r=>r.date===wd.date&&r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+    const isToday=wd.date===todayStr;
+    return`<div class="cal-week-head${isToday?' today-col':''}" onclick="calGoDay('${wd.date}')" style="cursor:pointer">
+      <div>${wd.label} <strong>${wd.day}</strong></div>
+      ${nb>0?`<div style="font-size:10px;opacity:.8;margin-top:2px">${nb}🚛 ${t}T</div>`:'<div style="font-size:10px;opacity:.5;margin-top:2px">—</div>'}
+    </div>`;}).join('');
+
   bodyEl.innerHTML=`
-    <div class="cal-week-view" style="margin-bottom:0">
-      <div class="cal-week-head"></div>
-      ${weekDays.map(wd=>`<div class="cal-week-head${wd.date===todayStr?' today-col':''}">${wd.label}<br><strong>${wd.day}</strong></div>`).join('')}
+    <div class="cal-week-view">
+      <div class="cal-week-head" style="font-size:11px;color:var(--soft)">Créneau</div>
+      ${dayHeaders}
+      ${rows}
+    </div>`;
+}
+
+// ══ VUE JOUR — liste détaillée tous créneaux ══
+function renderCalDay(titleEl,bodyEl){
+  const dateStr=fmt(calDate);
+  const dt=new Date(dateStr+'T12:00:00');
+  titleEl.textContent=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const rdvsDay=RDV.filter(r=>r.date===dateStr).sort((a,b)=>CRENEAUX.indexOf(a.creneau)-CRENEAUX.indexOf(b.creneau));
+  const totalT=rdvsDay.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+
+  const rows=CRENEAUX.map(cr=>{
+    const rdvsCr=rdvsDay.filter(r=>r.creneau===cr);
+    const blk=isBlocked(dateStr,cr);
+    const lastM=lastMatiereBeforeSlot(dateStr,cr);
+    const lastMObj=lastM?matById(lastM):null;
+    const cnt=slotCount(dateStr,cr);
+    const dispo=MAX_PAR_CRENEAU-cnt;
+
+    return`<div class="cal-day-row${blk?' blocked-row':''}">
+      <div class="cdr-creneau">
+        <div class="cdr-time">${cr}</div>
+        ${blk
+          ?`<div class="cdr-status blocked-lbl">🔒 Fermé</div>`
+          :`<div class="cdr-status" style="color:${dispo===0?'var(--rouge)':dispo<=1?'var(--orange)':'var(--vert)'}">
+            ${dispo===0?'Complet':dispo+' place(s)'}
+          </div>`}
+        ${lastMObj&&!blk?`<div class="cdr-prev-mat" style="border-color:${lastMObj.couleur};color:${lastMObj.couleur}">↑ ${lastMObj.nom}</div>`:''}
+      </div>
+      <div class="cdr-rdvs">
+        ${blk?`<div class="cdr-empty">Créneau bloqué / Jour fermé</div>`:
+          rdvsCr.length===0?`<div class="cdr-empty">${lastMObj?`Libre — matière précédente : <strong style="color:${lastMObj.couleur}">${lastMObj.nom}</strong>`:'Aucune livraison'}</div>`:
+          rdvsCr.map(r=>{
+            const m=matById(r.matiere_id);
+            const stColor=r.statut==='confirme'?m?.couleur||'#2E7D32':r.statut==='attente'?'#D97706':r.statut==='annule'?'#C8102E':'#9CA3AF';
+            return`<div class="cdr-rdv-card" onclick="openDetail(${r.id})">
+              <div style="width:5px;border-radius:3px;background:${m?.couleur||'#ccc'};flex-shrink:0;align-self:stretch"></div>
+              <div style="flex:1;min-width:0">
+                <div class="cdr-rdv-top">
+                  <span class="cdr-mat" style="color:${m?.couleur||'#333'}">${matDot(r.matiere_id)}${r.matiere_nom}</span>
+                  <span class="cdr-tonnage">${r.tonnage}T</span>
+                  ${bst(r.statut)}
+                </div>
+                <div class="cdr-rdv-bot">
+                  <span>🚛 ${r.transporteur}</span>
+                  <span>👤 ${r.chauffeur}</span>
+                  <span>🚗 ${r.immat}</span>
+                  <span style="font-family:monospace;font-size:11px">${r.bl}</span>
+                </div>
+              </div>
+            </div>`;
+          }).join('')
+        }
+      </div>
+    </div>`;
+  }).join('');
+
+  bodyEl.innerHTML=`
+    <div style="padding:0 0 8px">
+      <div style="display:flex;gap:10px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut!=='annule').length}</strong> <span style="color:var(--soft)">livraisons</span></div>
+        <div style="font-size:13px"><strong>${totalT}T</strong> <span style="color:var(--soft)">total</span></div>
+        <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut==='confirme').length}</strong> <span style="color:var(--soft)">confirmées</span></div>
+        <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut==='attente').length}</strong> <span style="color:var(--soft)">en attente</span></div>
+        <button class="btn-p sm" style="margin-left:auto" onclick="printPlanning('${dateStr}')">🖨️ Imprimer</button>
+      </div>
       ${rows}
     </div>`;
 }
 
 function calDayClick(date){
   if(!date)return;
-  const rdvsDay=myRdvs().filter(r=>r.date===date);
-  if(rdvsDay.length===0){
-    // Proposer de créer un RDV
-    if(['admin','responsable','transporteur','chauffeur'].includes(cuP?.role)){
-      document.getElementById('modal-box').className='modal-box';
-      document.getElementById('m-title').textContent=`📅 ${date}`;
-      document.getElementById('m-desc').textContent='Aucun RDV ce jour. Voulez-vous en créer un ?';
-      document.getElementById('m-content').innerHTML='';
-      const ok=document.getElementById('m-ok');ok.textContent='Créer un RDV';ok.className='m-ok';
-      ok.onclick=()=>{closeModal();switchView('new');setTimeout(()=>{const el=document.getElementById('nf-date');if(el){el.value=date;updateSlots();}},100);};
-      document.getElementById('m-cancel').style.display='';
-      document.getElementById('modal').classList.add('show');
-    }
-    return;
-  }
-  // Afficher les RDV du jour
-  document.getElementById('modal-box').className='modal-box wide';
-  document.getElementById('m-title').textContent=`📅 ${date} — ${rdvsDay.length} RDV`;
-  document.getElementById('m-desc').textContent='';
-  document.getElementById('m-content').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
-    ${rdvsDay.map(r=>{const m=matById(r.matiere_id);return`
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer" onclick="closeModal();openDetail(${r.id})">
-        <div style="width:4px;height:40px;border-radius:2px;background:${m?.couleur||'#6B7280'};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600">${r.creneau}</div>
-          <div style="font-size:12px;color:var(--soft)">${matDot(r.matiere_id)}${r.matiere_nom} — ${r.tonnage}T</div>
-          <div style="font-size:11px;color:var(--muted)">${r.transporteur} · ${r.chauffeur}</div>
-        </div>
-        ${bst(r.statut)}
-      </div>`;}).join('')}
-  </div>`;
-  const ok=document.getElementById('m-ok');ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
-  document.getElementById('m-cancel').style.display='none';
-  document.getElementById('modal').classList.add('show');
+  // Vue semaine → clic sur une cellule → basculer en vue jour
+  calDate=new Date(date+'T12:00:00');
+  calView='day';
+  switchView('cal');
 }
 
 // ══ HISTORIQUE ══
