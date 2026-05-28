@@ -942,7 +942,7 @@ function renderNew(){
   <div class="card"><div class="card-h"><h3>📋 Demande de livraison</h3><p>Les champs <span class="req">*</span> sont obligatoires</p></div>
   <div style="padding:18px;display:flex;flex-direction:column;gap:18px">
     <div><div class="fsect"><span class="dot dr"></span>Date & Horaire</div>
-      <div class="frow"><div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="nf-date" min="${tomorrowStr}" onchange="updateSlots()"></div>
+      
       <div class="fgrp"><label>Créneau <span class="req">*</span></label><select id="nf-cren"><option value="">— Choisir date et matière d'abord —</option></select></div></div>
     </div>
     <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
@@ -1014,8 +1014,7 @@ async function submitRdv(){
   const date=document.getElementById('nf-date').value;
   const cren=document.getElementById('nf-cren').value;
   const matId=document.getElementById('nf-mat').value;
-  // Bloquer le jour J
-  if(date<=todayStr){showToast('Les RDV doivent être pris minimum la veille','error');return;}
+  
   const check=checkSlot(date,cren,matId);
   if(!check.ok){
     if(check.reason==='incompat'){
