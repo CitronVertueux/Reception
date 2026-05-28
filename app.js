@@ -36,7 +36,7 @@ const BN_TABS={
 let cu=null,cuP=null,cv=null,charts={};
 let MATIERES=[],INCOMPATS=[],RDV=[],BLOCKED=[],SLOTS_MAT=[],USERS=[];
 let calDate=new Date();
-let calView='month'; // month | week
+let calView='week'; // month | week | day
 let deferredInstall=null;
 
 // ══ UI HELPERS ══
@@ -469,10 +469,10 @@ function renderCalWeek(titleEl,bodyEl){
       const chips=rdvsSlot.map(r=>{
         const m=matById(r.matiere_id);
         const stColor=r.statut==='confirme'?m?.couleur||'#2E7D32':r.statut==='attente'?'#D97706':'#9CA3AF';
-        return`<div class="cal-week-chip" style="background:${stColor}14;border-left:3px solid ${stColor}" onclick="event.stopPropagation();openDetail(${r.id})">
-          <div class="cwc-mat">${m?.code||'?'}</div>
+        return`<div class="cal-week-chip" style="background:${stColor}22;border-left:3px solid ${stColor}" onclick="event.stopPropagation();openDetail(${r.id})">
+          <div class="cwc-mat" style="color:${stColor}">${m?.nom||m?.code||'?'}</div>
           <div class="cwc-info">${r.tonnage}T · ${r.transporteur.split(' ')[r.transporteur.split(' ').length-1]}</div>
-          ${r.statut==='attente'?'<div class="cwc-warn">En attente</div>':''}
+          ${r.statut==='attente'?'<div class="cwc-warn">⏳ En attente</div>':''}
         </div>`;}).join('');
       const emptyInfo=cnt===0&&lastMObj?`<div class="cal-slot-prev">↑ ${lastMObj.code}</div>`:'';
       const slotBg=cnt>=MAX_PAR_CRENEAU?'var(--rouge-l)':'var(--vert-l)';
@@ -942,7 +942,7 @@ function renderNew(){
   <div class="card"><div class="card-h"><h3>📋 Demande de livraison</h3><p>Les champs <span class="req">*</span> sont obligatoires</p></div>
   <div style="padding:18px;display:flex;flex-direction:column;gap:18px">
     <div><div class="fsect"><span class="dot dr"></span>Date & Horaire</div>
-      
+      <div class="frow"><div class="fgrp"><label>Date <span class="req">*</span></label><input type="date" id="nf-date" min="${tomorrowStr}" onchange="updateSlots()"></div>
       <div class="fgrp"><label>Créneau <span class="req">*</span></label><select id="nf-cren"><option value="">— Choisir date et matière d'abord —</option></select></div></div>
     </div>
     <div><div class="fsect"><span class="dot dv"></span>Matière première</div>
@@ -1014,7 +1014,8 @@ async function submitRdv(){
   const date=document.getElementById('nf-date').value;
   const cren=document.getElementById('nf-cren').value;
   const matId=document.getElementById('nf-mat').value;
-  
+  // Bloquer le jour J
+  if(date<=todayStr){showToast('Les RDV doivent être pris minimum la veille','error');return;}
   const check=checkSlot(date,cren,matId);
   if(!check.ok){
     if(check.reason==='incompat'){
