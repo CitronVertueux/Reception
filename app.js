@@ -451,8 +451,7 @@ function renderCalWeek(titleEl,bodyEl){
   titleEl.textContent=`Semaine du ${weekDays[0].day} ${MOIS[weekDays[0].month].substring(0,3)}. au ${weekDays[6].day} ${MOIS[weekDays[6].month].substring(0,3)}.`;
 
   const rows=CRENEAUX.map(cr=>`
-    <div class="cal-slot-label">${cr.replace('–','–
-')}</div>
+    <div class="cal-slot-label">${cr.replace('–','–&#10;')}</div>
     ${weekDays.map(wd=>{
       const blk=isBlocked(wd.date,cr);
       const rdvsSlot=RDV.filter(r=>r.date===wd.date&&r.creneau===cr&&r.statut!=='annule');
