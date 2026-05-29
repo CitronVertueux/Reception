@@ -297,7 +297,7 @@ function renderDash(){
         :today.map(r=>'<tr><td><strong>'+r.creneau+'</strong></td>'
           +'<td>'+matDot(r.matiere_id)+r.matiere_nom+'<br><span style="color:var(--soft);font-size:11px">'+r.tonnage+'T</span></td>'
           +'<td>'+r.transporteur+'</td><td>'+r.chauffeur+'</td><td>'+bst(r.statut)+'</td>'
-          +'<td>'+(r.date<=todayStr&&r.statut=='confirme'?'<button class="abtn del" onclick="marquerNonArrive('+r.id+')">❌</button>':'')+'<button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
+          +'<td>'+(r.statut==='confirme'?'<button class="abtn del" onclick="marquerNonArrive('+r.id+')">❌</button>':'')+'<button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
           +(canDel?'<button class="abtn del" onclick="delRdv('+r.id+')">✕</button>':'')
           +'</td></tr>').join('')
       }</tbody>
@@ -1099,7 +1099,7 @@ async function openDetail(id){
       <div><span style="color:var(--soft);font-size:11px">Statut</span><br>
         ${canSt?`<div style="display:flex;gap:6px;flex-wrap:wrap">
         ${bst(r.statut)}
-        ${r.date<=todayStr&&r.statut==='confirme'?`<button class="btn-p sm rouge" onclick="marquerNonArrive(${r.id})">❌ Non arrivé</button>`:''}
+        ${r.statut==='confirme'?`<button class="btn-p sm rouge" onclick="marquerNonArrive(${r.id})">❌ Non arrivé</button>`:''}
         ${r.statut==='non_arrive'?`<button class="btn-p sm" onclick="reporterRdv(${r.id})">🔄 Reporter</button><button class="btn-p sm rouge" onclick="changeStatut(${r.id},'annule')">Annuler</button>`:''}
       </div>`:bst(r.statut)}
       </div>
@@ -1593,8 +1593,8 @@ async function marquerNonArrive(id){
       });
     }
     await reloadRdv();hideLoader();closeModal();
-    showToast('Marqué comme non arrivé');
-    if(cv==='dash')switchView('dash');
+    showToast('✅ Marqué comme non arrivé');
+    switchView('dash');
   };
   document.getElementById('modal').classList.add('show');
 }
