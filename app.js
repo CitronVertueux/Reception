@@ -1616,57 +1616,89 @@ function trouverCreneauDispo(matId, fromDate){
 }
 
 async function reporterRdv(id){
-  const r=RDV.find(r=>r.id===id);
-  if(!r)return;
-  // Chercher à partir de demain
-  const slot=trouverCreneauDispo(r.matiere_id,todayStr);
-  if(!slot){
-    showModal(
-      'Aucun créneau disponible',
-      `Impossible de reporter ${r.matiere_nom} — aucun créneau compatible dans les 14 prochains jours.`,
-      'Compris',closeModal,false
-    );
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  const m=matById(r.matiere_id);
+
+  // Trouver tous les créneaux dispos du lendemain (et J+2 si besoin)
+  const slots=[];
+  for(let d=1;d<=7;d++){
+    const date=fmt(new Date(now.getTime()+(d*86400000)));
+    if(new Date(date+'T12:00:00').getDay()===0) continue; // pas dimanche
+    for(const cr of CRENEAUX){
+      const check=checkSlot(date,cr,r.matiere_id);
+      if(check.ok){
+        const cnt=slotCount(date,cr);
+        slots.push({date,creneau:cr,places:MAX_PAR_CRENEAU-cnt});
+      }
+    }
+    // Afficher seulement les 2 prochains jours avec des créneaux
+    const datesAvecSlots=[...new Set(slots.map(s=>s.date))];
+    if(datesAvecSlots.length>=2) break;
+  }
+
+  if(slots.length===0){
+    showModal('Aucun créneau disponible',
+      `Impossible de reporter ${r.matiere_nom} — aucun créneau compatible dans les 7 prochains jours.`,
+      'Compris',closeModal,false);
     return;
   }
-  const m=matById(r.matiere_id);
-  // Afficher confirmation
-  document.getElementById('modal-box').className='modal-box';
-  document.getElementById('m-title').textContent='🔄 Reporter ce RDV ?';
+
+  // Grouper par date
+  const byDate={};
+  slots.forEach(s=>{
+    if(!byDate[s.date])byDate[s.date]=[];
+    byDate[s.date].push(s);
+  });
+
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent='🔄 Reporter ce RDV';
   document.getElementById('m-desc').textContent='';
   document.getElementById('m-content').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
-      <div style="background:var(--rouge-l);border-radius:8px;padding:11px 14px;border:1px solid var(--rouge-m)">
-        <div style="font-size:11px;color:var(--soft);margin-bottom:4px">RDV original (sera annulé)</div>
-        <strong style="color:var(--rouge)">${r.date} — ${r.creneau}</strong><br>
-        <span>${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T · ${r.transporteur}</span>
-      </div>
-      <div style="text-align:center;font-size:18px">↓</div>
-      <div style="background:var(--vert-l);border-radius:8px;padding:11px 14px;border:1px solid var(--vert-m)">
-        <div style="font-size:11px;color:var(--soft);margin-bottom:4px">Nouveau créneau (confirmé automatiquement)</div>
-        <strong style="color:var(--vert)">${slot.date} — ${slot.creneau}</strong><br>
-        <span>${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T · ${r.transporteur}</span>
-      </div>
+    <div style="background:var(--rouge-l);border-radius:8px;padding:10px 13px;border:1px solid var(--rouge-m);margin-bottom:14px;font-size:13px">
+      <div style="font-size:11px;color:var(--soft);margin-bottom:3px">RDV original (sera annulé)</div>
+      <strong style="color:var(--rouge)">${r.date} — ${r.creneau}</strong> &nbsp;·&nbsp;
+      ${matDot(r.matiere_id)}<strong>${r.matiere_nom}</strong> · ${r.tonnage}T · ${r.transporteur} · ${r.chauffeur}
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Choisir un créneau :</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${Object.entries(byDate).map(([date,crens])=>`
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:7px;padding:4px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
+            📅 ${new Date(date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            ${crens.map(s=>`
+              <button onclick="confirmerReport(${id},'${s.date}','${s.creneau}')"
+                style="padding:9px 14px;border:1.5px solid var(--vert);border-radius:8px;background:var(--vert-l);color:var(--vert);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px"
+                onmouseover="this.style.background='var(--vert)';this.style.color='#fff'"
+                onmouseout="this.style.background='var(--vert-l)';this.style.color='var(--vert)'">
+                <span>${s.creneau}</span>
+                <span style="font-size:10px;font-weight:400;opacity:.8">${s.places} place(s)</span>
+              </button>`).join('')}
+          </div>
+        </div>`).join('')}
     </div>`;
+
   const ok=document.getElementById('m-ok');
-  ok.textContent='✅ Confirmer le report';ok.className='m-ok';
-  ok.onclick=async()=>{
-    showLoader('Report en cours…');
-    // Annuler l'ancien
-    await sb.from('rdv').update({statut:'annule'}).eq('id',id);
-    // Créer le nouveau confirmé
-    await sb.from('rdv').insert({
-      date:slot.date,creneau:slot.creneau,
-      matiere_id:r.matiere_id,matiere_nom:r.matiere_nom,
-      tonnage:r.tonnage,bl:r.bl,transporteur:r.transporteur,
-      immat:r.immat,chauffeur:r.chauffeur,tel:r.tel,
-      statut:'confirme',user_id:r.user_id
-    });
-    await reloadRdv();
-    hideLoader();closeModal();switchView('dash');
-    showToast('✅ RDV reporté au '+slot.date+' — '+slot.creneau);
-  };
+  ok.style.display='none';
   document.getElementById('m-cancel').style.display='';
   document.getElementById('modal').classList.add('show');
+}
+
+async function confirmerReport(rdvId, newDate, newCreneau){
+  const r=RDV.find(r=>r.id===rdvId);if(!r)return;
+  showLoader('Report en cours…');
+  await sb.from('rdv').update({statut:'annule'}).eq('id',rdvId);
+  await sb.from('rdv').insert({
+    date:newDate,creneau:newCreneau,
+    matiere_id:r.matiere_id,matiere_nom:r.matiere_nom,
+    tonnage:r.tonnage,bl:r.bl,transporteur:r.transporteur,
+    immat:r.immat,chauffeur:r.chauffeur,tel:r.tel,
+    statut:'confirme',user_id:r.user_id
+  });
+  await reloadRdv();
+  hideLoader();closeModal();switchView('dash');
+  showToast('✅ RDV reporté au '+newDate+' — '+newCreneau);
 }
 
 async function reporterTous(){
@@ -1711,7 +1743,7 @@ function showModal(title,desc,okLbl,onOk,danger){
   document.getElementById('m-cancel').style.display=danger?'':'none';
   document.getElementById('modal').classList.add('show');
 }
-function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('m-cancel').style.display='';}
+function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('m-cancel').style.display='';document.getElementById('m-ok').style.display='';}
 
 // ══ PWA ══
 function initPWA(){
