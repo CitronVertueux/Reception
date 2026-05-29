@@ -130,6 +130,7 @@ tbody td{padding:10px 13px;vertical-align:middle;}
 .bb{background:var(--blue-l);color:var(--blue);}
 .br{background:var(--rouge-l);color:var(--rouge);}
 .bgy{background:#F3F4F6;color:#6B7280;}
+.bnv{background:#FEF2F2;color:#991B1B;}
 .bpu{background:var(--purple-l);color:var(--purple);}
 .btn-p{background:var(--vert);color:#fff;border:none;padding:8px 16px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .18s;box-shadow:0 2px 8px rgba(46,125,50,.2);}
 .btn-p:hover{background:var(--vert-d);}

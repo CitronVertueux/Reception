@@ -14,7 +14,7 @@ const fmt=d=>d.toISOString().split('T')[0];
 const now=new Date();
 const todayStr=fmt(now);
 const tomorrowStr=fmt(new Date(now.getTime()+86400000));
-const ST={attente:{lbl:'En attente',cls:'bo'},planifie:{lbl:'Planifié',cls:'bb'},confirme:{lbl:'Confirmé',cls:'bg'},termine:{lbl:'Terminé',cls:'bgy'},annule:{lbl:'Annulé',cls:'br'}};
+const ST={confirme:{lbl:'Confirmé',cls:'bg'},non_arrive:{lbl:'Non arrivé',cls:'br'},annule:{lbl:'Annulé',cls:'bgy'}};
 const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4'];
 
 const TABS={
@@ -239,7 +239,7 @@ function renderDash(){
   const totalT=all.filter(r=>r.statut==='termine'||r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
   const avenir=all.filter(r=>r.date>todayStr);
   const canDel=['admin','responsable'].includes(cuP?.role);
-  const nonArrives=RDV.filter(r=>r.date<todayStr&&(r.statut==='attente'||r.statut==='confirme'));
+  const nonArrives=RDV.filter(r=>r.statut==='non_arrive');
   const todayT=today.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
 
   let html=`
@@ -297,7 +297,7 @@ function renderDash(){
         :today.map(r=>'<tr><td><strong>'+r.creneau+'</strong></td>'
           +'<td>'+matDot(r.matiere_id)+r.matiere_nom+'<br><span style="color:var(--soft);font-size:11px">'+r.tonnage+'T</span></td>'
           +'<td>'+r.transporteur+'</td><td>'+r.chauffeur+'</td><td>'+bst(r.statut)+'</td>'
-          +'<td><button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
+          +'<td>'+(r.date<=todayStr&&r.statut=='confirme'?'<button class="abtn del" onclick="marquerNonArrive('+r.id+')">❌</button>':'')+'<button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
           +(canDel?'<button class="abtn del" onclick="delRdv('+r.id+')">✕</button>':'')
           +'</td></tr>').join('')
       }</tbody>
@@ -346,7 +346,7 @@ function renderRDV(){
         <td>${r.chauffeur}<br><span style="color:var(--soft);font-size:11px">${r.immat}</span></td>
         <td style="font-size:12px;font-family:monospace">${r.bl}</td>
         <td>${bst(r.statut)}</td>
-        <td>${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
+        <td>${''}
         <button class="abtn" onclick="openDetail(${r.id})">💬</button>
         ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}</td>
       </tr>`).join('')}</tbody>
@@ -586,7 +586,7 @@ function renderCalDay(titleEl,bodyEl){
   bodyEl.innerHTML=`
     <div style="padding:0 0 8px">
       <div style="display:flex;gap:10px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);flex-wrap:wrap">
-        <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut!=='annule').length}</strong> <span style="color:var(--soft)">livraisons</span></div>
+        <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut==='confirme').length}</strong> <span style="color:var(--soft)">attendus</span></div>
         <div style="font-size:13px"><strong>${totalT}T</strong> <span style="color:var(--soft)">total</span></div>
         <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut==='confirme').length}</strong> <span style="color:var(--soft)">confirmées</span></div>
         <div style="font-size:13px"><strong>${rdvsDay.filter(r=>r.statut==='attente').length}</strong> <span style="color:var(--soft)">en attente</span></div>
@@ -615,7 +615,7 @@ function renderHist(){
       <select class="f-sel" id="h-mat" onchange="applyFilters()"><option value="">Toutes</option>${MATIERES.filter(m=>m.actif).map(m=>`<option value="${m.id}">${m.nom}</option>`).join('')}</select>
     </div>
     <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Statut</div>
-      <select class="f-sel" id="h-stat" onchange="applyFilters()"><option value="">Tous</option><option value="attente">En attente</option><option value="planifie">Planifié</option><option value="confirme">Confirmé</option><option value="termine">Terminé</option><option value="annule">Annulé</option></select>
+      <select class="f-sel" id="h-stat" onchange="applyFilters()"><option value="">Tous</option><option value="confirme">Confirmé</option><option value="non_arrive">Non arrivé</option><option value="annule">Annulé</option></select>
     </div>
     <div><div style="font-size:11px;font-weight:600;color:var(--soft);margin-bottom:3px">Transporteur</div><input type="text" class="f-input" id="h-trans" placeholder="Rechercher…" oninput="applyFilters()"></div>
     <button class="btn-s sm" onclick="resetFilters()">Réinitialiser</button>
@@ -1097,7 +1097,11 @@ async function openDetail(id){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;font-size:13px">
       <div><span style="color:var(--soft);font-size:11px">Date & Créneau</span><br><strong>${r.date} — ${r.creneau}</strong></div>
       <div><span style="color:var(--soft);font-size:11px">Statut</span><br>
-        ${canSt?`<select class="f-sel" onchange="changeStatut(${r.id},this.value)" style="width:auto;font-size:12px;padding:3px 24px 3px 8px">${Object.entries(ST).map(([k,v])=>`<option value="${k}"${r.statut===k?' selected':''}>${v.lbl}</option>`).join('')}</select>`:bst(r.statut)}
+        ${canSt?`<div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${bst(r.statut)}
+        ${r.date<=todayStr&&r.statut==='confirme'?`<button class="btn-p sm rouge" onclick="marquerNonArrive(${r.id})">❌ Non arrivé</button>`:''}
+        ${r.statut==='non_arrive'?`<button class="btn-p sm" onclick="reporterRdv(${r.id})">🔄 Reporter</button><button class="btn-p sm rouge" onclick="changeStatut(${r.id},'annule')">Annuler</button>`:''}
+      </div>`:bst(r.statut)}
       </div>
       <div><span style="color:var(--soft);font-size:11px">Matière</span><br><span class="mat-color-dot" style="background:${m?.couleur||'#ccc'}"></span><strong>${r.matiere_nom}</strong> <span style="font-size:11px;color:var(--soft)">(${m?.code||''})</span> — ${r.tonnage}T</div>
       <div><span style="color:var(--soft);font-size:11px">N° BL</span><br><strong style="font-family:monospace">${r.bl}</strong></div>
@@ -1559,6 +1563,42 @@ async function changeStatut(id,statut){
   if(document.getElementById('modal').classList.contains('show')){closeModal();}
   switchView(cv);showToast('Statut mis à jour → '+ST[statut]?.lbl);
 }
+// ══ MARQUER NON ARRIVÉ ══
+async function marquerNonArrive(id){
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='❌ Marquer comme non arrivé ?';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <div style="background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:8px;padding:12px 14px;font-size:13px;margin-bottom:12px">
+      <strong>${r.transporteur}</strong> — ${r.chauffeur}<br>
+      <span style="color:var(--soft)">${r.matiere_nom} · ${r.tonnage}T · ${r.creneau}</span>
+    </div>
+    <div class="fgrp">
+      <label>Motif (optionnel)</label>
+      <input type="text" id="na-motif" placeholder="Ex: Camion en panne, route barrée…">
+    </div>`;
+  const ok=document.getElementById('m-ok');
+  ok.textContent='❌ Confirmer non arrivé';ok.className='m-ok danger';
+  document.getElementById('m-cancel').style.display='';
+  ok.onclick=async()=>{
+    const motif=document.getElementById('na-motif')?.value.trim();
+    showLoader();
+    await sb.from('rdv').update({statut:'non_arrive'}).eq('id',id);
+    if(motif){
+      await sb.from('commentaires').insert({
+        rdv_id:id,auteur:cuP?.nom||'?',
+        auteur_couleur:cuP?.couleur||'#C8102E',
+        texte:'❌ Non arrivé — '+motif
+      });
+    }
+    await reloadRdv();hideLoader();closeModal();
+    showToast('Marqué comme non arrivé');
+    if(cv==='dash')switchView('dash');
+  };
+  document.getElementById('modal').classList.add('show');
+}
+
 // ══ REPORT AU LENDEMAIN ══
 function trouverCreneauDispo(matId, fromDate){
   // Cherche le premier créneau dispo et compatible à partir de fromDate
@@ -1630,7 +1670,7 @@ async function reporterRdv(id){
 }
 
 async function reporterTous(){
-  const nonArrives=RDV.filter(r=>r.date<todayStr&&(r.statut==='attente'||r.statut==='confirme'));
+  const nonArrives=RDV.filter(r=>r.statut==='non_arrive');
   if(nonArrives.length===0)return;
   showModal(
     `Reporter ${nonArrives.length} RDV ?`,
