@@ -238,9 +238,11 @@ function renderDash(){
   const enAtt=all.filter(r=>r.statut==='attente');
   const totalT=all.filter(r=>r.statut==='termine'||r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
   const avenir=all.filter(r=>r.date>todayStr);
-  const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
   const canDel=['admin','responsable'].includes(cuP?.role);
-  return`
+  const nonArrives=RDV.filter(r=>r.date<todayStr&&(r.statut==='attente'||r.statut==='confirme'));
+  const todayT=today.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
+
+  let html=`
   <div class="pg-h">
     <div><h2>Tableau de bord</h2><p>${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -250,34 +252,59 @@ function renderDash(){
       <button class="btn-p sm" onclick="printPlanning()">🖨️ Planning du jour</button>
     </div>
   </div>
-  <div class="stats-grid">
-    <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val rt-today" style="color:var(--vert)">${today.length}</div><div class="sc-sub">rendez-vous</div></div>
-    <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val rt-attente" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à confirmer</div></div>
+  <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val rt-today" style="color:var(--vert)">${today.length}</div><div class="sc-sub">${todayT}T attendus</div></div>
+    <div class="sc orange"><div class="sc-lbl">En attente</div><div class="sc-val rt-attente" style="color:var(--orange)">${enAtt.length}</div><div class="sc-sub">à valider</div></div>
     <div class="sc blue"><div class="sc-lbl">À venir</div><div class="sc-val rt-avenir" style="color:var(--blue)">${avenir.length}</div><div class="sc-sub">planifiés</div></div>
     <div class="sc rouge"><div class="sc-lbl">Tonnage</div><div class="sc-val rt-tonnage" style="color:var(--rouge)">${totalT}T</div><div class="sc-sub">traité</div></div>
-  </div>
+    <div class="sc purple"><div class="sc-lbl">À reporter</div><div class="sc-val" style="color:var(--purple)">${nonArrives.length}</div><div class="sc-sub">non arrivés</div></div>
+  </div>`;
+
+  if(nonArrives.length>0){
+    html+=`<div class="card" style="border-left:4px solid var(--purple)">
+      <div class="card-h">
+        <div><h3>🔄 Camions non arrivés (${nonArrives.length})</h3>
+        <p style="font-size:12px;color:var(--soft);margin-top:2px">RDV passés non pris en charge — reportez sur le prochain créneau compatible.</p></div>
+        <button class="btn-p sm" onclick="reporterTous()" style="background:var(--purple);flex-shrink:0">🔄 Tout reporter</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date orig.</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Action</th></tr></thead>
+        <tbody>${nonArrives.map(r=>`<tr>
+          <td><strong style="color:var(--rouge)">${r.date}</strong></td>
+          <td>${r.creneau}</td>
+          <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="font-size:11px;color:var(--soft)">${r.tonnage}T</span></td>
+          <td>${r.transporteur}</td><td>${r.chauffeur}</td>
+          <td><button class="btn-p sm" style="background:var(--purple);font-size:11px" onclick="reporterRdv(${r.id})">🔄 Reporter</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }
+
+  html+=`
   <div class="charts-grid">
-    <div class="chart-card"><h3>📦 Tonnes par semaine (8 sem.)</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
-    <div class="chart-card"><h3>🌾 Répartition par matière</h3><div class="chart-wrap"><canvas id="c-matieres"></canvas></div></div>
+    <div class="chart-card"><h3>📦 Tonnes par semaine</h3><div class="chart-wrap"><canvas id="c-tonnes"></canvas></div></div>
+    <div class="chart-card"><h3>🌾 Par matière</h3><div class="chart-wrap"><canvas id="c-matieres"></canvas></div></div>
     <div class="chart-card"><h3>📊 Par statut</h3><div class="chart-wrap"><canvas id="c-statuts"></canvas></div></div>
-    <div class="chart-card"><h3>🚛 RDV par jour (7 derniers jours)</h3><div class="chart-wrap"><canvas id="c-jours"></canvas></div></div>
+    <div class="chart-card"><h3>🚛 RDV par jour (7j)</h3><div class="chart-wrap"><canvas id="c-jours"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-h"><h3>📅 RDV d'aujourd'hui (${today.length})</h3><button class="btn-p sm" onclick="switchView('rdv')">Voir tout →</button></div>
+    <div class="card-h"><h3>📅 Aujourd'hui (${today.length}) — ${todayT}T</h3>
+    <button class="btn-p sm" onclick="switchView('rdv')">Voir tout →</button></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Statut</th><th>Actions</th></tr></thead>
-      <tbody>${today.length===0?`<tr><td colspan="6"><div class="empty">✅ Aucun RDV aujourd'hui</div></td></tr>`:today.map(r=>`<tr>
-        <td><strong>${r.creneau}</strong></td>
-        <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
-        <td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${bst(r.statut)}</td>
-        <td>${canConfirm&&r.statut==='attente'?`<button class="abtn" onclick="changeStatut(${r.id},'confirme')">✓</button>`:''}
-        <button class="abtn" onclick="openDetail(${r.id})">💬</button>
-        ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}</td>
-      </tr>`).join('')}</tbody>
+      <thead><tr><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${today.length===0
+        ?'<tr><td colspan="6"><div class="empty">✅ Aucun RDV aujourd\'hui</div></td></tr>'
+        :today.map(r=>'<tr><td><strong>'+r.creneau+'</strong></td>'
+          +'<td>'+matDot(r.matiere_id)+r.matiere_nom+'<br><span style="color:var(--soft);font-size:11px">'+r.tonnage+'T</span></td>'
+          +'<td>'+r.transporteur+'</td><td>'+r.chauffeur+'</td><td>'+bst(r.statut)+'</td>'
+          +'<td><button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
+          +(canDel?'<button class="abtn del" onclick="delRdv('+r.id+')">✕</button>':'')
+          +'</td></tr>').join('')
+      }</tbody>
     </table></div>
   </div>`;
+  return html;
 }
-
 function buildCharts(){
   const all=myRdvs();
   // Tonnes / semaine (8 semaines)
@@ -1532,6 +1559,108 @@ async function changeStatut(id,statut){
   if(document.getElementById('modal').classList.contains('show')){closeModal();}
   switchView(cv);showToast('Statut mis à jour → '+ST[statut]?.lbl);
 }
+// ══ REPORT AU LENDEMAIN ══
+function trouverCreneauDispo(matId, fromDate){
+  // Cherche le premier créneau dispo et compatible à partir de fromDate
+  const maxDays=14;
+  for(let d=0;d<maxDays;d++){
+    const date=fmt(new Date(new Date(fromDate+'T12:00:00').getTime()+(d*86400000)));
+    // Pas de dimanche
+    if(new Date(date+'T12:00:00').getDay()===0) continue;
+    for(const cr of CRENEAUX){
+      const check=checkSlot(date,cr,matId);
+      if(check.ok) return {date,creneau:cr};
+    }
+  }
+  return null;
+}
+
+async function reporterRdv(id){
+  const r=RDV.find(r=>r.id===id);
+  if(!r)return;
+  // Chercher à partir de demain
+  const slot=trouverCreneauDispo(r.matiere_id,todayStr);
+  if(!slot){
+    showModal(
+      'Aucun créneau disponible',
+      `Impossible de reporter ${r.matiere_nom} — aucun créneau compatible dans les 14 prochains jours.`,
+      'Compris',closeModal,false
+    );
+    return;
+  }
+  const m=matById(r.matiere_id);
+  // Afficher confirmation
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='🔄 Reporter ce RDV ?';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+      <div style="background:var(--rouge-l);border-radius:8px;padding:11px 14px;border:1px solid var(--rouge-m)">
+        <div style="font-size:11px;color:var(--soft);margin-bottom:4px">RDV original (sera annulé)</div>
+        <strong style="color:var(--rouge)">${r.date} — ${r.creneau}</strong><br>
+        <span>${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T · ${r.transporteur}</span>
+      </div>
+      <div style="text-align:center;font-size:18px">↓</div>
+      <div style="background:var(--vert-l);border-radius:8px;padding:11px 14px;border:1px solid var(--vert-m)">
+        <div style="font-size:11px;color:var(--soft);margin-bottom:4px">Nouveau créneau (confirmé automatiquement)</div>
+        <strong style="color:var(--vert)">${slot.date} — ${slot.creneau}</strong><br>
+        <span>${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T · ${r.transporteur}</span>
+      </div>
+    </div>`;
+  const ok=document.getElementById('m-ok');
+  ok.textContent='✅ Confirmer le report';ok.className='m-ok';
+  ok.onclick=async()=>{
+    showLoader('Report en cours…');
+    // Annuler l'ancien
+    await sb.from('rdv').update({statut:'annule'}).eq('id',id);
+    // Créer le nouveau confirmé
+    await sb.from('rdv').insert({
+      date:slot.date,creneau:slot.creneau,
+      matiere_id:r.matiere_id,matiere_nom:r.matiere_nom,
+      tonnage:r.tonnage,bl:r.bl,transporteur:r.transporteur,
+      immat:r.immat,chauffeur:r.chauffeur,tel:r.tel,
+      statut:'confirme',user_id:r.user_id
+    });
+    await reloadRdv();
+    hideLoader();closeModal();switchView('dash');
+    showToast('✅ RDV reporté au '+slot.date+' — '+slot.creneau);
+  };
+  document.getElementById('m-cancel').style.display='';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function reporterTous(){
+  const nonArrives=RDV.filter(r=>r.date<todayStr&&(r.statut==='attente'||r.statut==='confirme'));
+  if(nonArrives.length===0)return;
+  showModal(
+    `Reporter ${nonArrives.length} RDV ?`,
+    'Chaque RDV sera reporté sur le premier créneau disponible et compatible. Les anciens RDV seront annulés.',
+    'Tout reporter',
+    async()=>{
+      showLoader('Report en cours…');
+      let ok=0,fail=0;
+      for(const r of nonArrives){
+        const slot=trouverCreneauDispo(r.matiere_id,todayStr);
+        if(slot){
+          await sb.from('rdv').update({statut:'annule'}).eq('id',r.id);
+          await sb.from('rdv').insert({
+            date:slot.date,creneau:slot.creneau,
+            matiere_id:r.matiere_id,matiere_nom:r.matiere_nom,
+            tonnage:r.tonnage,bl:r.bl,transporteur:r.transporteur,
+            immat:r.immat,chauffeur:r.chauffeur,tel:r.tel,
+            statut:'confirme',user_id:r.user_id
+          });
+          ok++;
+        } else { fail++; }
+      }
+      await reloadRdv();
+      hideLoader();closeModal();switchView('dash');
+      showToast(`✅ ${ok} RDV reportés${fail>0?' · '+fail+' sans créneau dispo':''}`);
+    },
+    false
+  );
+}
+
 function delRdv(id){showModal('Supprimer ce RDV ?','Action irréversible.','Supprimer',async()=>{showLoader();await sb.from('rdv').delete().eq('id',id);await reloadRdv();hideLoader();closeModal();switchView(cv);showToast('RDV supprimé');},true);}
 
 // ══ MODAL ══
