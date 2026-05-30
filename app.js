@@ -647,12 +647,13 @@ function exportCSV(){
 
 // ══ RAPPORTS ══
 function renderRapports(){
-  const canExport=['admin','responsable'].includes(cuP?.role);
   return`
-  <div class="pg-h"><div><h2>📈 Rapports & Analyses</h2><p>Statistiques détaillées de l'activité</p></div>
-    ${canExport?`<div style="display:flex;gap:8px"><button class="btn-p sm orange" onclick="exportRapportPDF()">📄 Export PDF</button><button class="btn-p sm" onclick="exportCSV()">📊 Export CSV</button></div>`:''}
+  <div class="pg-h"><div><h2>📈 Rapports & Analyses</h2><p>Visible uniquement par Admin et Responsable</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-p sm orange" onclick="exportRapportPDF()">📄 Export PDF complet</button>
+      <button class="btn-p sm" onclick="exportCSV()">📊 Export CSV</button>
+    </div>
   </div>
-  <!-- KPIs période -->
   <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="font-size:12.5px;font-weight:600;color:var(--soft)">Période :</span>
     <select class="f-sel" id="r-period" onchange="buildRapports()" style="width:auto">
@@ -670,50 +671,100 @@ function buildRapports(){
   const days=parseInt(document.getElementById('r-period')?.value||30);
   const since=new Date(now);since.setDate(since.getDate()-days);
   const sinceStr=fmt(since);
-  const list=myRdvs().filter(r=>r.date>=sinceStr);
+  const list=RDV.filter(r=>r.date>=sinceStr);
   const totalRdv=list.length;
-  const totalT=list.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
-  const confirmes=list.filter(r=>r.statut==='confirme'||r.statut==='termine').length;
-  const txConf=totalRdv?Math.round(confirmes/totalRdv*100):0;
-  const transporteurs=[...new Set(list.map(r=>r.transporteur))].length;
-  const moyT=totalRdv?Math.round(totalT/Math.max(1,list.filter(r=>r.statut!=='annule').length)):0;
+  const confirmes=list.filter(r=>r.statut==='confirme').length;
+  const nonArrives=list.filter(r=>r.statut==='non_arrive');
+  const annules=list.filter(r=>r.statut==='annule');
+  const totalT=list.filter(r=>r.statut!=='annule'&&r.statut!=='non_arrive').reduce((s,r)=>s+r.tonnage,0);
+  const txPonct=totalRdv>0?Math.round(confirmes/totalRdv*100):0;
+  const moyT=confirmes>0?Math.round(totalT/confirmes):0;
 
-  // Par matière (pour barres de progression)
+  // Stats par transporteur avec ponctualité
+  const transStats={};
+  list.forEach(r=>{
+    if(!transStats[r.transporteur])transStats[r.transporteur]={
+      nom:r.transporteur,rdv:0,confirme:0,non_arrive:0,annule:0,tonnage:0
+    };
+    transStats[r.transporteur].rdv++;
+    transStats[r.transporteur][r.statut]=(transStats[r.transporteur][r.statut]||0)+1;
+    if(r.statut==='confirme')transStats[r.transporteur].tonnage+=r.tonnage;
+  });
+  const transArr=Object.values(transStats).map(t=>({
+    ...t,
+    ponct:t.rdv>0?Math.round((t.rdv-t.non_arrive-t.annule)/t.rdv*100):0
+  })).sort((a,b)=>b.rdv-a.rdv);
+
+  // Par matière
   const matStats=MATIERES.map(m=>{
     const rdvsMat=list.filter(r=>r.matiere_id===m.id&&r.statut!=='annule');
-    return{m,count:rdvsMat.length,tonnage:rdvsMat.reduce((s,r)=>s+r.tonnage,0)};
+    return{m,count:rdvsMat.length,tonnage:rdvsMat.filter(r=>r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0)};
   }).filter(s=>s.count>0).sort((a,b)=>b.tonnage-a.tonnage);
   const maxT=matStats[0]?.tonnage||1;
-
-  // Par transporteur
-  const transStats={};list.forEach(r=>{if(!transStats[r.transporteur])transStats[r.transporteur]={count:0,tonnage:0};transStats[r.transporteur].count++;transStats[r.transporteur].tonnage+=(r.statut!=='annule'?r.tonnage:0);});
-  const transArr=Object.entries(transStats).sort((a,b)=>b[1].tonnage-a[1].tonnage).slice(0,8);
-  const maxTT=transArr[0]?.[1]?.tonnage||1;
 
   // Par créneau
   const slotStats={};CRENEAUX.forEach(c=>{slotStats[c]=list.filter(r=>r.creneau===c&&r.statut!=='annule').length;});
 
+  // Ponctualité couleur
+  const pColor=p=>p>=90?'#2E7D32':p>=70?'#D97706':'#C8102E';
+  const pBg=p=>p>=90?'#f0f7f0':p>=70?'#FFF7E6':'#fdf0f2';
+
   body.innerHTML=`
-  <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-val" style="color:var(--vert)">${totalRdv}</div><div class="kpi-lbl">Total RDV</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">${totalT}T</div><div class="kpi-lbl">Tonnage total</div></div>
-    <div class="kpi"><div class="kpi-val" style="color:var(--orange)">${txConf}%</div><div class="kpi-lbl">Taux confirmation</div></div>
+  <!-- KPIs -->
+  <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">${totalRdv}</div><div class="kpi-lbl">Total RDV</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--vert)">${confirmes}</div><div class="kpi-lbl">Livrés</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--rouge)">${nonArrives.length}</div><div class="kpi-lbl">Non arrivés</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--orange)">${annules.length}</div><div class="kpi-lbl">Annulés</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:${pColor(txPonct)}">${txPonct}%</div><div class="kpi-lbl">Ponctualité</div></div>
+  </div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-top:-4px">
+    <div class="kpi"><div class="kpi-val" style="color:var(--blue)">${totalT}T</div><div class="kpi-lbl">Tonnage livré</div></div>
     <div class="kpi"><div class="kpi-val" style="color:var(--purple)">${moyT}T</div><div class="kpi-lbl">Moy. / livraison</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--soft)">${transArr.length}</div><div class="kpi-lbl">Transporteurs</div></div>
   </div>
 
+  <!-- Graphiques -->
   <div class="charts-grid">
-    <div class="chart-card"><h3>📦 Tonnage journalier</h3><div class="chart-wrap-lg"><canvas id="r-daily"></canvas></div></div>
-    <div class="chart-card"><h3>🚛 Top transporteurs (tonnage)</h3><div class="chart-wrap-lg"><canvas id="r-trans"></canvas></div></div>
+    <div class="chart-card"><h3>📦 Tonnage livré par jour</h3><div class="chart-wrap-lg"><canvas id="r-daily"></canvas></div></div>
+    <div class="chart-card"><h3>📊 Statuts</h3><div class="chart-wrap-lg"><canvas id="r-statuts"></canvas></div></div>
   </div>
 
+  <!-- Ponctualité transporteurs -->
+  <div class="rapport-section" style="margin-bottom:16px">
+    <div class="rapport-section-h"><h3>🏆 Taux de ponctualité par transporteur</h3><span style="font-size:12px;color:var(--soft)">Classé par ponctualité</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>#</th><th>Transporteur</th><th>Total RDV</th><th>Livrés</th><th>Non arrivés</th><th>Annulés</th><th>Tonnage</th><th>Ponctualité</th></tr></thead>
+      <tbody>${[...transArr].sort((a,b)=>b.ponct-a.ponct).map((t,i)=>`<tr>
+        <td><strong style="color:${i===0?'#D97706':i===1?'#9CA3AF':i===2?'#B45309':'var(--soft)'}">${i+1}</strong></td>
+        <td><strong>${t.nom}</strong></td>
+        <td>${t.rdv}</td>
+        <td style="color:var(--vert);font-weight:600">${t.confirme||0}</td>
+        <td style="color:${t.non_arrive>0?'var(--rouge)':'var(--soft)'}"><strong>${t.non_arrive||0}</strong></td>
+        <td style="color:var(--soft)">${t.annule||0}</td>
+        <td>${t.tonnage}T</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;min-width:60px">
+              <div style="height:100%;width:${t.ponct}%;background:${pColor(t.ponct)};border-radius:4px;transition:width .6s"></div>
+            </div>
+            <span style="font-weight:700;font-size:13px;color:${pColor(t.ponct)};background:${pBg(t.ponct)};padding:2px 8px;border-radius:6px;white-space:nowrap">${t.ponct}%</span>
+          </div>
+        </td>
+      </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- Matières + Créneaux -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
     <div class="rapport-section">
       <div class="rapport-section-h"><h3>🌾 Tonnage par matière</h3></div>
       <div class="rapport-section-body">
-        ${matStats.length===0?`<div class="empty">Aucune donnée</div>`:matStats.map(s=>`
+        ${matStats.length===0?'<div class="empty">Aucune donnée</div>':matStats.map(s=>`
           <div class="progress-bar-wrap">
             <div class="progress-bar-label">
-              <span>${matDot(s.m.id)}${s.m.nom} <span class="badge bgy" style="font-size:10px">${s.m.code}</span></span>
+              <span>${matDot(s.m.id)}${s.m.nom}</span>
               <span style="font-weight:600">${s.tonnage}T <span style="color:var(--muted);font-weight:400">(${s.count} RDV)</span></span>
             </div>
             <div class="progress-bar"><div class="progress-bar-fill" style="width:${Math.round(s.tonnage/maxT*100)}%;background:${s.m.couleur}"></div></div>
@@ -721,33 +772,44 @@ function buildRapports(){
       </div>
     </div>
     <div class="rapport-section">
-      <div class="rapport-section-h"><h3>⏱ Utilisation des créneaux</h3></div>
+      <div class="rapport-section-h"><h3>⏱ Utilisation créneaux</h3></div>
       <div class="rapport-section-body"><div class="chart-wrap" style="height:220px"><canvas id="r-slots"></canvas></div></div>
     </div>
   </div>
 
+  <!-- Non arrivés détail -->
+  ${nonArrives.length>0?`
   <div class="rapport-section">
-    <div class="rapport-section-h"><h3>🏆 Top transporteurs</h3></div>
+    <div class="rapport-section-h"><h3>❌ Détail des non-arrivés (${nonArrives.length})</h3></div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>#</th><th>Transporteur</th><th>Nb RDV</th><th>Tonnage</th><th>Part</th></tr></thead>
-      <tbody>${transArr.map(([name,s],i)=>`<tr>
-        <td><strong style="color:${i===0?'#D97706':i===1?'#9CA3AF':i===2?'#B45309':'var(--soft)'}">${i+1}</strong></td>
-        <td>${name}</td><td>${s.count}</td><td><strong>${s.tonnage}T</strong></td>
-        <td><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;background:var(--vert);width:${Math.round(s.tonnage/maxTT*100)}%;border-radius:3px"></div></div><span style="font-size:11px;color:var(--soft);white-space:nowrap">${Math.round(s.tonnage/totalT*100)}%</span></div></td>
-      </tr>`).join('')}</tbody>
+      <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Tonnage</th></tr></thead>
+      <tbody>${nonArrives.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr>
+        <td>${r.date}</td><td>${r.creneau}</td>
+        <td>${matDot(r.matiere_id)}${r.matiere_nom}</td>
+        <td>${r.transporteur}</td><td>${r.chauffeur}</td>
+        <td>${r.tonnage}T</td>
+      </tr>`).join('')}
+      </tbody>
     </table></div>
-  </div>`;
+  </div>`:''}`;
 
-  // Chart journalier
+  // Graphiques
   const dailyDays=Math.min(days,30);
   const dLabels=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});});
-  const dData=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return list.filter(r=>r.date===fmt(d)&&r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);});
+  const dData=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return list.filter(r=>r.date===fmt(d)&&r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);});
+  const dNa=[...Array(dailyDays)].map((_,i)=>{const d=new Date(now);d.setDate(d.getDate()-(dailyDays-1-i));return list.filter(r=>r.date===fmt(d)&&r.statut==='non_arrive').length;});
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
   const c1=document.getElementById('r-daily');
-  if(c1){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
-  charts.d=new Chart(c1,{type:'bar',data:{labels:dLabels,datasets:[{data:dData,backgroundColor:'rgba(46,125,50,.65)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}
+  if(c1)charts.d=new Chart(c1,{type:'bar',data:{labels:dLabels,datasets:[
+    {label:'Tonnage livré',data:dData,backgroundColor:'rgba(46,125,50,.7)',borderRadius:4,yAxisID:'y'},
+    {label:'Non arrivés',data:dNa,backgroundColor:'rgba(200,16,46,.6)',borderRadius:4,yAxisID:'y2',type:'line',tension:.3,pointRadius:3,pointBackgroundColor:'#C8102E',fill:false,borderColor:'#C8102E'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11}}}},scales:{y:{beginAtZero:true,position:'left'},y2:{beginAtZero:true,position:'right',grid:{drawOnChartArea:false}}}}});
 
-  const c2=document.getElementById('r-trans');
-  if(c2)charts.tr=new Chart(c2,{type:'bar',data:{labels:transArr.map(([n])=>n.length>15?n.substring(0,15)+'…':n),datasets:[{data:transArr.map(([,s])=>s.tonnage),backgroundColor:'rgba(37,99,235,.65)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+  const c2=document.getElementById('r-statuts');
+  if(c2)charts.s=new Chart(c2,{type:'doughnut',data:{
+    labels:['Livrés','Non arrivés','Annulés'],
+    datasets:[{data:[confirmes,nonArrives.length,annules.length],backgroundColor:['#2E7D32','#C8102E','#9CA3AF'],borderWidth:3,borderColor:'#fff'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:12},padding:16}}}}});
 
   const c3=document.getElementById('r-slots');
   if(c3)charts.sl=new Chart(c3,{type:'polarArea',data:{labels:CRENEAUX.map(c=>c.split('–')[0]),datasets:[{data:CRENEAUX.map(c=>slotStats[c]||0),backgroundColor:['rgba(46,125,50,.7)','rgba(37,99,235,.7)','rgba(217,119,6,.7)','rgba(124,58,237,.7)','rgba(200,16,46,.7)','rgba(16,185,129,.7)'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:10}}}}}});
@@ -756,24 +818,116 @@ function buildRapports(){
 function exportRapportPDF(){
   const days=parseInt(document.getElementById('r-period')?.value||30);
   const since=new Date(now);since.setDate(since.getDate()-days);
-  const list=myRdvs().filter(r=>r.date>=fmt(since));
-  const totalT=list.filter(r=>r.statut!=='annule').reduce((s,r)=>s+r.tonnage,0);
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:30px;color:#1E1E1E}h1{color:#2E7D32;border-bottom:2px solid #2E7D32;padding-bottom:8px}h2{color:#1E1E1E;font-size:14px;margin-top:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}th{background:#F8F6F2;padding:8px;text-align:left;border:1px solid #E8E4DE;font-size:11px}td{padding:7px 8px;border:1px solid #E8E4DE}.badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:600}.footer{margin-top:30px;font-size:11px;color:#9CA3AF;text-align:center}</style></head><body>
-  <h1>📊 Rapport Sanders Euralis — Réception Matières Premières</h1>
-  <p>Période : ${days} derniers jours · Généré le ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</p>
-  <h2>Résumé</h2>
-  <table><tr><th>Total RDV</th><th>Tonnage total</th><th>RDV actifs</th></tr>
-  <tr><td>${list.length}</td><td>${totalT}T</td><td>${list.filter(r=>r.statut!=='annule').length}</td></tr></table>
-  <h2>Détail des rendez-vous</h2>
-  <table><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th></tr>
-  ${list.map(r=>`<tr><td>${r.date}</td><td>${r.creneau}</td><td>${r.matiere_nom}</td><td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${r.bl}</td><td>${ST[r.statut]?.lbl||r.statut}</td></tr>`).join('')}
-  </table>
-  <div class="footer">Sanders Euralis — Site de Vic-en-Bigorre · 193 Impasse Lautrec, 65500 Vic-en-Bigorre</div>
-  </body></html>`;
-  const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
-  showToast('Rapport ouvert — utilisez Fichier > Imprimer pour sauvegarder en PDF');
-}
+  const sinceStr=fmt(since);
+  const list=RDV.filter(r=>r.date>=sinceStr);
+  const confirmes=list.filter(r=>r.statut==='confirme');
+  const nonArrives=list.filter(r=>r.statut==='non_arrive');
+  const annules=list.filter(r=>r.statut==='annule');
+  const totalT=confirmes.reduce((s,r)=>s+r.tonnage,0);
+  const txPonct=list.length>0?Math.round(confirmes.length/list.length*100):0;
+  const pColor=p=>p>=90?'#2E7D32':p>=70?'#D97706':'#C8102E';
 
+  // Ponctualité par transporteur
+  const transStats={};
+  list.forEach(r=>{
+    if(!transStats[r.transporteur])transStats[r.transporteur]={rdv:0,confirme:0,non_arrive:0,annule:0,tonnage:0};
+    transStats[r.transporteur].rdv++;
+    transStats[r.transporteur][r.statut]=(transStats[r.transporteur][r.statut]||0)+1;
+    if(r.statut==='confirme')transStats[r.transporteur].tonnage+=r.tonnage;
+  });
+  const transArr=Object.entries(transStats).map(([nom,t])=>({nom,...t,ponct:t.rdv>0?Math.round((t.rdv-t.non_arrive-t.annule)/t.rdv*100):0})).sort((a,b)=>b.ponct-a.ponct);
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;padding:28px;color:#1E1E1E;font-size:12px;line-height:1.5}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #2E7D32;padding-bottom:12px;margin-bottom:20px}
+    h1{color:#2E7D32;font-size:18px;margin:0 0 4px}
+    h2{font-size:13px;font-weight:700;margin:20px 0 8px;color:#1E1E1E;border-left:3px solid #2E7D32;padding-left:8px}
+    .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+    .kpi{background:#F8F6F2;border-radius:8px;padding:10px;text-align:center;border:1px solid #E8E4DE}
+    .kpi-v{font-size:20px;font-weight:700;margin-bottom:2px}
+    .kpi-l{font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:.5px}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:11px}
+    th{background:#F0EDE8;padding:7px 9px;text-align:left;border:1px solid #E8E4DE;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    td{padding:6px 9px;border:1px solid #E8E4DE;vertical-align:middle}
+    tr:nth-child(even){background:#FAFAF8}
+    .bar-wrap{display:flex;align-items:center;gap:8px}
+    .bar-bg{flex:1;height:6px;background:#E8E4DE;border-radius:3px;overflow:hidden}
+    .bar-fill{height:100%;border-radius:3px}
+    .badge{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600}
+    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #E8E4DE;font-size:10px;color:#9CA3AF;display:flex;justify-content:space-between}
+    @media print{body{padding:16px}@page{margin:1.5cm}}
+  </style></head><body>
+  <div class="header">
+    <div>
+      <h1>📊 Rapport d'activité — Sanders Euralis</h1>
+      <div style="color:#6B7280;font-size:11px">Site de Vic-en-Bigorre · Période : ${days} derniers jours (${sinceStr} → ${todayStr})</div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:#6B7280">
+      Généré le ${new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}<br>
+      <strong style="color:#1E1E1E">Par ${cuP?.nom||'?'} (${ROLE_FR[cuP?.role]||'?'})</strong>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-v" style="color:#2563EB">${list.length}</div><div class="kpi-l">Total RDV</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#2E7D32">${confirmes.length}</div><div class="kpi-l">Livrés</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#C8102E">${nonArrives.length}</div><div class="kpi-l">Non arrivés</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#9CA3AF">${annules.length}</div><div class="kpi-l">Annulés</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:${pColor(txPonct)}">${txPonct}%</div><div class="kpi-l">Ponctualité</div></div>
+  </div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="kpi-v" style="color:#2563EB">${totalT}T</div><div class="kpi-l">Tonnage livré</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#7C3AED">${confirmes.length>0?Math.round(totalT/confirmes.length):0}T</div><div class="kpi-l">Moy. / livraison</div></div>
+    <div class="kpi"><div class="kpi-v" style="color:#6B7280">${transArr.length}</div><div class="kpi-l">Transporteurs</div></div>
+  </div>
+
+  <h2>🏆 Taux de ponctualité par transporteur</h2>
+  <table>
+    <tr><th>#</th><th>Transporteur</th><th>Total</th><th>Livrés</th><th>Non arrivés</th><th>Annulés</th><th>Tonnage</th><th>Ponctualité</th></tr>
+    ${transArr.map((t,i)=>`<tr>
+      <td><strong>${i+1}</strong></td>
+      <td><strong>${t.nom}</strong></td>
+      <td>${t.rdv}</td>
+      <td style="color:#2E7D32;font-weight:600">${t.confirme||0}</td>
+      <td style="color:${t.non_arrive>0?'#C8102E':'#9CA3AF'};font-weight:${t.non_arrive>0?'700':'400'}">${t.non_arrive||0}</td>
+      <td style="color:#9CA3AF">${t.annule||0}</td>
+      <td>${t.tonnage}T</td>
+      <td><div class="bar-wrap"><div class="bar-bg"><div class="bar-fill" style="width:${t.ponct}%;background:${pColor(t.ponct)}"></div></div><strong style="color:${pColor(t.ponct)}">${t.ponct}%</strong></div></td>
+    </tr>`).join('')}
+  </table>
+
+  ${nonArrives.length>0?`
+  <h2>❌ Détail des non-arrivés (${nonArrives.length})</h2>
+  <table>
+    <tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Tél.</th><th>N° BL</th></tr>
+    ${nonArrives.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr>
+      <td>${r.date}</td><td>${r.creneau}</td><td>${r.matiere_nom}</td>
+      <td>${r.transporteur}</td><td>${r.chauffeur}</td><td>${r.tel}</td>
+      <td style="font-family:monospace">${r.bl}</td>
+    </tr>`).join('')}
+  </table>`:''}
+
+  <h2>📋 Détail complet des RDV</h2>
+  <table>
+    <tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Tonnage</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th></tr>
+    ${list.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr>
+      <td>${r.date}</td><td>${r.creneau}</td><td>${r.matiere_nom}</td>
+      <td>${r.tonnage}T</td><td>${r.transporteur}</td><td>${r.chauffeur}</td>
+      <td style="font-family:monospace;font-size:10px">${r.bl}</td>
+      <td><span class="badge" style="background:${r.statut==='confirme'?'#f0f7f0':r.statut==='non_arrive'?'#fdf0f2':'#F3F4F6'};color:${r.statut==='confirme'?'#2E7D32':r.statut==='non_arrive'?'#C8102E':'#6B7280'}">${ST[r.statut]?.lbl||r.statut}</span></td>
+    </tr>`).join('')}
+  </table>
+
+  <div class="footer">
+    <span>Sanders Euralis · 193 Impasse Lautrec, 65500 Vic-en-Bigorre</span>
+    <span>Document confidentiel — Usage interne uniquement</span>
+  </div>
+  <script>window.onload=()=>window.print();</script>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  showToast('📄 Rapport ouvert — Fichier > Imprimer pour sauvegarder en PDF');
+}
 // ══ CRÉNEAUX ══
 function renderSlots(){
   const canBlock=['admin','responsable'].includes(cuP?.role);
