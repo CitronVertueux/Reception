@@ -274,7 +274,10 @@ function renderDash(){
           <td>${r.creneau}</td>
           <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="font-size:11px;color:var(--soft)">${r.tonnage}T</span></td>
           <td>${r.transporteur}</td><td>${r.chauffeur}</td>
-          <td><button class="btn-p sm" style="background:var(--purple);font-size:11px" onclick="reporterRdv(${r.id})">🔄 Reporter</button></td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-s sm" onclick="popupNonArrive(${r.id})">🔍 Détails</button>
+            <button class="btn-p sm" style="background:var(--purple);font-size:11px" onclick="reporterRdv(${r.id})">🔄 Reporter</button>
+          </td>
         </tr>`).join('')}</tbody>
       </table></div>
     </div>`;
@@ -1836,6 +1839,91 @@ async function reporterRdv(id){
   const ok=document.getElementById('m-ok');
   ok.style.display='none';
   document.getElementById('m-cancel').style.display='';
+  document.getElementById('modal').classList.add('show');
+}
+
+async function popupNonArrive(id){
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  const m=matById(r.matiere_id);
+  // Charger les commentaires (qui contiennent le motif)
+  const{data:comments}=await sb.from('commentaires').select('*').eq('rdv_id',id).order('created_at');
+  const comms=comments||[];
+  const motifComm=comms.find(c=>c.texte.startsWith('❌ Non arrivé'));
+  const motif=motifComm?motifComm.texte.replace('❌ Non arrivé — ','').replace('❌ Non arrivé','').trim():'Aucun motif renseigné';
+
+  document.getElementById('modal-box').className='modal-box wide';
+  document.getElementById('m-title').textContent='🔍 Détail — Camion non arrivé';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <!-- En-tête rouge -->
+    <div style="background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--rouge);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">❌</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--rouge)">${r.date} — ${r.creneau}</div>
+          <div style="font-size:13px;color:var(--soft);margin-top:2px">${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T</div>
+        </div>
+        <div style="margin-left:auto">${bst(r.statut)}</div>
+      </div>
+    </div>
+
+    <!-- Grille infos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:13px">
+      <div style="background:var(--bg);border-radius:8px;padding:11px 13px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">🚛 Transporteur</div>
+        <div style="font-weight:600">${r.transporteur}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:11px 13px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">👤 Chauffeur</div>
+        <div style="font-weight:600">${r.chauffeur}</div>
+        <div style="font-size:11px;color:var(--soft);margin-top:2px"><a href="tel:${r.tel}" style="color:var(--vert)">${r.tel}</a></div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:11px 13px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">🚗 Immatriculation</div>
+        <div style="font-weight:600">${r.immat}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:11px 13px">
+        <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">📋 N° Bon de livraison</div>
+        <div style="font-weight:600;font-family:monospace">${r.bl}</div>
+      </div>
+    </div>
+
+    <!-- Motif -->
+    <div style="background:${motifComm?'#FFF7E6':'var(--bg)'};border:1px solid ${motifComm?'#FDE68A':'var(--border)'};border-radius:10px;padding:13px 15px;margin-bottom:${comms.filter(c=>!c.texte.startsWith('❌')).length>0?'14px':'0'}">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">⚠️ Motif du non-arrivé</div>
+      <div style="font-size:13px;font-weight:${motifComm?'600':'400'};color:${motifComm?'#92400E':'var(--muted)'}">
+        ${motifComm?motif:'Aucun motif renseigné par l&#39;employé'}
+      </div>
+      ${motifComm?`<div style="font-size:11px;color:var(--muted);margin-top:5px">Signalé par <strong>${motifComm.auteur}</strong> · ${new Date(motifComm.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+    </div>
+
+    <!-- Autres commentaires -->
+    ${comms.filter(c=>!c.texte.startsWith('❌')).length>0?`
+    <div style="margin-top:14px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">💬 Commentaires</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${comms.filter(c=>!c.texte.startsWith('❌')).map(c=>`
+          <div style="background:var(--bg);border-radius:8px;padding:9px 12px">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+              <div style="width:20px;height:20px;border-radius:50%;background:${c.auteur_couleur};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">${c.auteur.charAt(0)}</div>
+              <span style="font-size:12px;font-weight:600">${c.auteur}</span>
+              <span style="font-size:11px;color:var(--muted)">${new Date(c.created_at).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+            </div>
+            <div style="font-size:12.5px;color:var(--soft)">${c.texte}</div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap">
+      <button class="btn-p sm" style="background:var(--purple)" onclick="closeModal();reporterRdv(${r.id})">🔄 Reporter ce RDV</button>
+      <button class="btn-p sm rouge" onclick="closeModal();changeStatut(${r.id},'annule')">Annuler définitivement</button>
+      <a href="tel:${r.tel}" class="btn-s sm" style="text-decoration:none;display:flex;align-items:center">📞 Appeler le chauffeur</a>
+    </div>`;
+
+  const ok=document.getElementById('m-ok');
+  ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
+  document.getElementById('m-cancel').style.display='none';
   document.getElementById('modal').classList.add('show');
 }
 
