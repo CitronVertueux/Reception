@@ -783,14 +783,20 @@ function buildRapports(){
   <!-- Non arrivés détail -->
   ${nonArrives.length>0?`
   <div class="rapport-section">
-    <div class="rapport-section-h"><h3>❌ Détail des non-arrivés (${nonArrives.length})</h3></div>
+    <div class="rapport-section-h">
+      <h3>❌ Détail des non-arrivés (${nonArrives.length})</h3>
+      <span style="font-size:12px;color:var(--soft)">Cliquez sur une ligne pour voir les détails</span>
+    </div>
     <div class="tbl-wrap"><table>
-      <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Tonnage</th></tr></thead>
-      <tbody>${nonArrives.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr>
-        <td>${r.date}</td><td>${r.creneau}</td>
+      <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>Tonnage</th><th>Détails</th></tr></thead>
+      <tbody>${nonArrives.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr style="cursor:pointer" onclick="popupNonArrive(${r.id})" onmouseover="this.style.background='var(--rouge-l)'" onmouseout="this.style.background=''">
+        <td><strong>${r.date}</strong></td>
+        <td>${r.creneau}</td>
         <td>${matDot(r.matiere_id)}${r.matiere_nom}</td>
-        <td>${r.transporteur}</td><td>${r.chauffeur}</td>
+        <td>${r.transporteur}</td>
+        <td>${r.chauffeur}</td>
         <td>${r.tonnage}T</td>
+        <td><span style="color:var(--rouge);font-size:12px;font-weight:600">🔍 Voir →</span></td>
       </tr>`).join('')}
       </tbody>
     </table></div>
