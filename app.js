@@ -25,14 +25,14 @@ const ST={confirme:{lbl:'Confirmé',cls:'bg'},non_arrive:{lbl:'Non arrivé',cls:
 const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4'];
 
 const TABS={
-  admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'tour',lbl:'📺 Tour de contrôle'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'durees',lbl:'⏱ Durées'},{id:'settings',lbl:'⚙️ Paramètres'}],
-  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'tour',lbl:'📺 Tour de contrôle'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
+  admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'durees',lbl:'⏱ Durées'},{id:'settings',lbl:'⚙️ Paramètres'}],
+  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
   employe:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'}],
   transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'new',lbl:'➕ Nouveau'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
   chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau'},{id:'hist',lbl:'📁 Historique'}],
 };
 const BN_TABS={
-  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'tour',icon:'📺',lbl:'Contrôle'},{id:'rapports',icon:'📈',lbl:'Rapports'}],
+  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'}],
   responsable:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'},{id:'matieres',icon:'🌾',lbl:'Matières'}],
   employe:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'hist',icon:'📁',lbl:'Histo'}],
   transporteur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'drivers',icon:'👷',lbl:'Chauffeurs'},{id:'hist',icon:'📁',lbl:'Histo'}],
@@ -247,7 +247,7 @@ function switchView(id){
   cv=id;
   document.querySelectorAll('.d-tab').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
-  const renders={dash:renderDash,rdv:renderRDV,cal:renderCal,hist:renderHist,rapports:renderRapports,tour:renderTour,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,durees:renderDurees,settings:renderSettings};
+  const renders={dash:renderDash,rdv:renderRDV,cal:renderCal,hist:renderHist,rapports:renderRapports,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,durees:renderDurees,settings:renderSettings};
   document.getElementById('dash-body').innerHTML=(renders[id]||(() =>''))();
   if(id==='dash')setTimeout(buildCharts,50);
   if(id==='hist')setTimeout(applyFilters,50);
@@ -363,29 +363,111 @@ function renderRDV(){
   const list=myRdvs();
   const today=list.filter(r=>r.date===todayStr);
   const avenir=list.filter(r=>r.date>todayStr);
-  const canConfirm=['admin','responsable','employe'].includes(cuP?.role);
   const canDel=['admin','responsable'].includes(cuP?.role);
-  const tbl=(title,arr,emptyMsg)=>`
-    <div class="card"><div class="card-h"><h3>${title}</h3></div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th><th>Actions</th></tr></thead>
-      <tbody>${arr.length===0?`<tr><td colspan="8"><div class="empty">${emptyMsg}</div></td></tr>`:arr.map(r=>`<tr>
-        <td>${r.date}</td><td>${r.creneau}</td>
-        <td>${matDot(r.matiere_id)}${r.matiere_nom}<br><span style="color:var(--soft);font-size:11px">${r.tonnage}T</span></td>
-        <td>${r.transporteur}</td>
-        <td>${r.chauffeur}<br><span style="color:var(--soft);font-size:11px">${r.immat}</span></td>
-        <td style="font-size:12px;font-family:monospace">${r.bl}</td>
-        <td>${bst(r.statut)}</td>
-        <td>${''}
-        <button class="abtn" onclick="openDetail(${r.id})">💬</button>
-        ${canDel?`<button class="abtn del" onclick="delRdv(${r.id})">✕</button>`:''}</td>
-      </tr>`).join('')}</tbody>
-    </table></div></div>`;
-  return`<div class="pg-h"><div><h2>Rendez-vous</h2></div></div>
-  ${tbl(`📅 Aujourd'hui (${today.length})`,today,'Aucun RDV aujourd\'hui')}
-  ${tbl(`🔜 À venir (${avenir.length})`,avenir,'Aucun RDV à venir')}`;
-}
+  const canMarkNA=['admin','responsable','employe'].includes(cuP?.role);
+  const nonArrivesAuj=RDV.filter(r=>r.statut==='non_arrive'&&r.date<=todayStr);
+  const livres=today.filter(r=>r.statut==='confirme').length;
+  const totalAuj=today.filter(r=>r.statut!=='annule').length;
+  const tonnageAuj=today.filter(r=>r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
+  const ponct=totalAuj>0?Math.round(livres/totalAuj*100):0;
+  const tousArr=totalAuj>0&&nonArrivesAuj.length===0&&today.filter(r=>r.statut!=='annule'&&r.statut!=='confirme').length===0;
+  const pColor=p=>p>=90?'var(--vert)':p>=70?'var(--orange)':'var(--rouge)';
+  const saison=getSaison();
+  const saisonEmoji={noel:'🎄',hiver:'❄️',printemps:'🌸',ete:'☀️',automne:'🍂'}[saison]||'';
+  if(tousArr&&!document.getElementById('confetti-canvas'))launchConfetti();
 
+  const tbl=(title,arr,emptyMsg)=>
+    '<div class="card"><div class="card-h"><h3>'+title+'</h3></div>'
+    +'<div class="tbl-wrap"><table>'
+    +'<thead><tr><th>Date</th><th>Créneau</th><th>Matière</th><th>Transporteur</th><th>Chauffeur</th><th>N° BL</th><th>Statut</th><th>Actions</th></tr></thead>'
+    +'<tbody>'+(arr.length===0?'<tr><td colspan="8"><div class="empty">'+emptyMsg+'</div></td></tr>':arr.map(r=>{
+      const rowBg=r.statut==='non_arrive'?'style="background:var(--rouge-l)"':'';
+      return '<tr '+rowBg+'>'
+        +'<td>'+r.date+'</td><td>'+r.creneau+'</td>'
+        +'<td>'+matDot(r.matiere_id)+r.matiere_nom+'<br><span style="color:var(--soft);font-size:11px">'+r.tonnage+'T</span></td>'
+        +'<td>'+r.transporteur+'</td>'
+        +'<td>'+r.chauffeur+'<br><span style="color:var(--soft);font-size:11px">'+r.immat+'</span></td>'
+        +'<td style="font-size:12px;font-family:monospace">'+r.bl+'</td>'
+        +'<td>'+bst(r.statut)+'</td>'
+        +'<td>'
+          +(canMarkNA&&r.statut==='confirme'?'<button class="abtn del" onclick="marquerNonArrive('+r.id+')">❌</button>':'')
+          +(r.statut==='non_arrive'?'<button class="abtn" style="border-color:var(--purple);color:var(--purple)" onclick="reporterRdv('+r.id+')">🔄</button>':'')
+          +'<button class="abtn" onclick="openDetail('+r.id+')">💬</button>'
+          +(canDel?'<button class="abtn del" onclick="delRdv('+r.id+')">✕</button>':'')
+        +'</td></tr>';
+    }).join(''))
+    +'</tbody></table></div></div>';
+
+  // Section récap jour
+  let recap='';
+  if(totalAuj>0||nonArrivesAuj.length>0){
+    const borderColor=nonArrivesAuj.length>0?'var(--rouge)':tousArr?'var(--vert)':'var(--vert)';
+    const creneauxHtml=CRENEAUX.map(cr=>{
+      const rdvsCr=today.filter(r=>r.creneau===cr);
+      const blk=isBlocked(todayStr,cr);
+      const minR=minutesRestantes(todayStr,cr);
+      const pct=Math.round((CRENEAU_DUREE_MIN-minR)/CRENEAU_DUREE_MIN*100);
+      const hasNA=rdvsCr.some(r=>r.statut==='non_arrive');
+      const barColor=hasNA?'var(--rouge)':pct>=90?'var(--rouge)':pct>=60?'var(--orange)':'var(--vert)';
+      const pills=rdvsCr.length===0
+        ?'<span style="font-size:10px;color:var(--muted);font-style:italic">'+(blk?'Bloqué':'Libre')+'</span>'
+        :rdvsCr.map(r=>{const m=matById(r.matiere_id);return'<span style="font-size:10px;font-weight:600;padding:2px 5px;border-radius:4px;background:'+(m?.couleur||'#888')+'22;color:'+(m?.couleur||'#888')+';border:1px solid '+(m?.couleur||'#888')+'44;cursor:pointer" onclick="openDetail('+r.id+')" title="'+r.transporteur+' · '+r.chauffeur+'">'+(m?.code||'?')+' '+r.tonnage+'T'+(r.statut==='non_arrive'?' ❌':'')+'</span>';}).join('');
+      return '<div style="background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid '+(hasNA?'var(--rouge-m)':'var(--border)')+'">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+        +'<span style="font-size:11px;font-weight:700;color:var(--text)">'+cr+'</span>'
+        +'<span style="font-size:10px;color:'+(blk?'var(--rouge)':'var(--soft)')+'">'+( blk?'🔒 Fermé':minR+'min lib.')+'</span>'
+        +'</div>'
+        +'<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:6px">'
+        +'<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:3px"></div></div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:3px">'+pills+'</div>'
+        +'</div>';
+    }).join('');
+
+    const naHtml=nonArrivesAuj.length>0?
+      '<div style="margin-top:12px;background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:8px;padding:10px 14px">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--rouge);margin-bottom:6px">🚨 Non arrivés — action requise</div>'
+      +nonArrivesAuj.map(r=>'<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--rouge-m);flex-wrap:wrap">'
+        +'<span style="font-size:12px;flex:1">'+matDot(r.matiere_id)+'<strong>'+r.matiere_nom+'</strong> · '+r.tonnage+'T · '+r.transporteur+' · '+r.chauffeur+'</span>'
+        +'<span style="font-size:11px;color:var(--soft)">'+r.date+' '+r.creneau+'</span>'
+        +'<button class="btn-p sm" style="background:var(--purple);font-size:11px" onclick="reporterRdv('+r.id+')">🔄 Reporter</button>'
+        +'<button class="abtn" onclick="popupNonArrive('+r.id+')" style="font-size:11px">🔍</button>'
+        +'</div>').join('')
+      +'</div>':'';
+
+    recap=`<div class="card" style="margin-bottom:16px;border-left:4px solid ${borderColor}">
+      <div class="card-h">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h3>📊 Situation du jour</h3>
+          ${tousArr?'<span style="background:var(--vert-l);color:var(--vert);font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">🎉 Tous arrivés !</span>':''}
+          ${nonArrivesAuj.length>0?'<span style="background:var(--rouge-l);color:var(--rouge);font-size:12px;font-weight:700;padding:3px 10px;border-radius:8px">🚨 '+nonArrivesAuj.length+' non-arrivé(s)</span>':''}
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--vert);animation:pulse 2s infinite;display:inline-block"></span>
+          <span style="font-size:11px;color:var(--soft)">Temps réel</span>
+        </div>
+      </div>
+      <div style="padding:14px 16px">
+        <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:14px">
+          <div class="sc vert"><div class="sc-lbl">Aujourd'hui</div><div class="sc-val" style="color:var(--vert)">${totalAuj}</div><div class="sc-sub">camions</div></div>
+          <div class="sc blue"><div class="sc-lbl">Livrés</div><div class="sc-val" style="color:var(--blue)">${livres}</div></div>
+          <div class="sc rouge"><div class="sc-lbl">Non arrivés</div><div class="sc-val" style="color:var(--rouge)">${nonArrivesAuj.length}</div></div>
+          <div class="sc orange"><div class="sc-lbl">Tonnage livré</div><div class="sc-val" style="color:var(--orange)">${tonnageAuj}T</div></div>
+          <div class="sc"><div class="sc-lbl">Ponctualité</div><div class="sc-val" style="color:${pColor(ponct)}">${ponct}%</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${creneauxHtml}</div>
+        ${naHtml}
+      </div>
+    </div>`;
+  }
+
+  return '<div class="pg-h">'
+    +'<div><h2>Rendez-vous '+saisonEmoji+'</h2><p>'+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+'</p></div>'
+    +'<button class="btn-p sm" onclick="printPlanning()">🖨️ Planning du jour</button>'
+    +'</div>'
+    +recap
+    +tbl('📅 Aujourd\'hui ('+today.length+')',today,'Aucun RDV aujourd\'hui')
+    +tbl('🔜 À venir ('+avenir.length+')',avenir,'Aucun RDV à venir');
+}
 // ══ CALENDRIER ══
 function renderCal(){
   const canNew=['admin','responsable','employe'].includes(cuP?.role);
