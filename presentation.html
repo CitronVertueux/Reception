@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanders Euralis — Portail Réception Matières Premières</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rouge: #C8102E;
+  --rouge-l: #fdf0f2;
+  --rouge-d: #9b0c22;
+  --vert: #2E7D32;
+  --vert-l: #f0f7f0;
+  --vert-d: #1b5e20;
+  --vert-m: #a8d5aa;
+  --beige: #F8F6F2;
+  --beige-d: #F0EDE8;
+  --white: #FFFFFF;
+  --text: #1E1E1E;
+  --soft: #6B7280;
+  --muted: #9CA3AF;
+  --border: #E8E4DE;
+  --orange: #D97706;
+  --blue: #2563EB;
+  --purple: #7C3AED;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--white);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* NAVIGATION */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 0 40px;
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* logo styles removed */
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--soft);
+  text-decoration: none;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--vert); }
+.nav-cta {
+  background: var(--vert);
+  color: #fff !important;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 10px rgba(46,125,50,.25);
+}
+.nav-cta:hover { background: var(--vert-d) !important; color: #fff !important; }
+
+/* SECTIONS */
+section { padding: 96px 40px; }
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-alt { background: var(--beige); }
+.section-dark { background: var(--text); color: #fff; }
+.section-rouge { background: var(--rouge); color: #fff; }
+.section-vert { background: var(--vert); color: #fff; }
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--vert);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--vert);
+  border-radius: 1px;
+}
+.eyebrow.white { color: rgba(255,255,255,.7); }
+.eyebrow.white::before { background: rgba(255,255,255,.5); }
+.eyebrow.rouge { color: var(--rouge); }
+.eyebrow.rouge::before { background: var(--rouge); }
+
+h1, h2, h3 { font-family: 'Lora', serif; font-weight: 600; }
+h1 { font-size: clamp(36px, 5vw, 60px); line-height: 1.15; }
+h2 { font-size: clamp(26px, 3.5vw, 40px); line-height: 1.25; margin-bottom: 16px; }
+h3 { font-size: 20px; line-height: 1.35; margin-bottom: 10px; }
+
+.lead {
+  font-size: clamp(16px, 2vw, 19px);
+  color: var(--soft);
+  line-height: 1.75;
+  max-width: 640px;
+}
+.lead.white { color: rgba(255,255,255,.75); }
+
+/* HERO */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(160deg, var(--beige) 0%, var(--white) 60%);
+  padding-top: 120px;
+  padding-bottom: 80px;
+}
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--vert-l);
+  border: 1px solid var(--vert-m);
+  color: var(--vert);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+.hero-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vert);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(.8); }
+}
+.hero-title { margin-bottom: 24px; }
+.hero-title em {
+  font-style: normal;
+  color: var(--vert);
+  position: relative;
+}
+.hero-title em::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0; right: 0;
+  height: 3px;
+  background: var(--vert);
+  opacity: .25;
+  border-radius: 2px;
+}
+.hero-ctas {
+  display: flex;
+  gap: 12px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--vert);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all .2s;
+  box-shadow: 0 4px 16px rgba(46,125,50,.3);
+}
+.btn-primary:hover { background: var(--vert-d); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,.35); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text);
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  border: 1.5px solid var(--border);
+  transition: all .2s;
+}
+.btn-secondary:hover { border-color: var(--vert); color: var(--vert); }
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.hero-stat-val {
+  font-family: 'Lora', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.hero-stat-lbl { font-size: 12px; color: var(--soft); font-weight: 500; }
+
+/* MOCKUP HERO */
+.hero-mockup {
+  position: relative;
+}
+.mockup-window {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.12);
+}
+.mockup-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mockup-dots { display: flex; gap: 5px; }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-url {
+  flex: 1;
+  background: var(--beige);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--soft);
+}
+.mockup-body { padding: 20px; }
+
+/* CARDS */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 48px;
+}
+.cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 3px;
+}
+.card.vert::before { background: var(--vert); }
+.card.rouge::before { background: var(--rouge); }
+.card.orange::before { background: var(--orange); }
+.card.blue::before { background: var(--blue); }
+.card.purple::before { background: var(--purple); }
+.card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.09); border-color: transparent; }
+.card-icon { font-size: 28px; margin-bottom: 14px; }
+.card-title { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+.card-desc { font-size: 14px; color: var(--soft); line-height: 1.65; }
+.card-tag {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--vert-l);
+  color: var(--vert);
+}
+
+/* CHIFFRES */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  margin-top: 48px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.stat-block {
+  padding: 36px 28px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+}
+.stat-block:last-child { border-right: none; }
+.stat-block-val {
+  font-family: 'Lora', serif;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: #fff;
+}
+.stat-block-lbl {
+  font-size: 13px;
+  opacity: .6;
+  font-weight: 500;
+}
+
+/* FLUX / TIMELINE */
+.flux {
+  display: flex;
+  gap: 0;
+  margin-top: 48px;
+  position: relative;
+}
+.flux::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  right: 28px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--vert), var(--rouge));
+  z-index: 0;
+}
+.flux-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 8px;
+}
+.flux-num {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  border: 3px solid var(--white);
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  flex-shrink: 0;
+}
+.flux-num.vert { background: var(--vert); color: #fff; }
+.flux-num.rouge { background: var(--rouge); color: #fff; }
+.flux-num.orange { background: var(--orange); color: #fff; }
+.flux-num.blue { background: var(--blue); color: #fff; }
+.flux-num.purple { background: var(--purple); color: #fff; }
+.flux-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.flux-desc { font-size: 12px; color: var(--soft); line-height: 1.5; }
+
+/* ROLES */
+.roles-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+.role-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 18px;
+  text-align: center;
+  transition: all .2s;
+}
+.role-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.09); }
+.role-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 14px;
+}
+.role-name { font-family: 'Lora', serif; font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+.role-features { text-align: left; }
+.role-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--soft);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.role-feature::before {
+  content: '✓';
+  color: var(--vert);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* INCOMPAT */
+.incompat-demo {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-top: 32px;
+}
+.incompat-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.incompat-row:last-child { border-bottom: none; }
+.mat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.mat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.incompat-sign {
+  font-size: 18px;
+  color: var(--rouge);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.incompat-label {
+  font-size: 12px;
+  color: var(--soft);
+}
+
+/* TECHSTACK */
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 48px;
+}
+.tech-card {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 24px;
+}
+.tech-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: .5;
+  margin-bottom: 12px;
+}
+.tech-card-name {
+  font-family: 'Lora', serif;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.tech-card-desc {
+  font-size: 13.5px;
+  opacity: .65;
+  line-height: 1.6;
+}
+.tech-badge {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.1);
+  opacity: .8;
+}
+
+/* COMMENT IMPOSER */
+.steps-list { margin-top: 36px; display: flex; flex-direction: column; gap: 20px; }
+.step-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+}
+.step-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--vert);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.step-content h4 { font-family: 'Lora', serif; font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.step-content p { font-size: 14px; color: var(--soft); line-height: 1.65; }
+.step-content .tip {
+  margin-top: 10px;
+  background: var(--vert-l);
+  border-left: 3px solid var(--vert);
+  padding: 8px 12px;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: var(--vert-d);
+}
+
+/* COMPARATIF */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 40px;
+  font-size: 14px;
+}
+.compare-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--soft);
+  background: var(--beige-d);
+  border-bottom: 2px solid var(--border);
+}
+.compare-table th.highlight { background: var(--vert); color: #fff; }
+.compare-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.compare-table td.highlight { background: var(--vert-l); font-weight: 600; }
+.compare-table tr:hover td { background: var(--beige); }
+.compare-table .check { color: var(--vert); font-weight: 700; }
+.compare-table .cross { color: var(--rouge); }
+.compare-table .partial { color: var(--orange); }
+
+/* DEMO SECTION */
+.demo-section {
+  background: linear-gradient(135deg, var(--rouge) 0%, #9b0c22 100%);
+  color: #fff;
+  padding: 80px 40px;
+  text-align: center;
+}
+.demo-roles {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 36px;
+}
+.demo-role-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.12);
+  border: 1.5px solid rgba(255,255,255,.25);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all .2s;
+  cursor: pointer;
+}
+.demo-role-btn:hover { background: rgba(255,255,255,.22); transform: translateY(-2px); }
+.demo-role-icon { font-size: 20px; }
+
+/* FAQ */
+.faq-list { margin-top: 40px; display: flex; flex-direction: column; gap: 12px; }
+.faq-item {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.faq-q {
+  padding: 18px 22px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background .15s;
+}
+.faq-q:hover { background: var(--beige); }
+.faq-q::after { content: '+'; font-size: 20px; color: var(--vert); font-weight: 400; }
+.faq-a {
+  padding: 0 22px 18px;
+  font-size: 14px;
+  color: var(--soft);
+  line-height: 1.7;
+  display: none;
+}
+.faq-item.open .faq-a { display: block; }
+.faq-item.open .faq-q::after { content: '−'; }
+
+/* FOOTER */
+footer {
+  background: var(--text);
+  color: rgba(255,255,255,.6);
+  padding: 48px 40px;
+  text-align: center;
+}
+.footer-inner { max-width: 1200px; margin: 0 auto; }
+.footer-logo { font-family: 'Lora', serif; font-size: 20px; color: #fff; font-weight: 600; margin-bottom: 12px; }
+.footer-desc { font-size: 13px; margin-bottom: 24px; }
+.footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+.footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 13px; transition: color .2s; }
+.footer-links a:hover { color: var(--vert-m); }
+
+/* DIVIDER */
+.divider {
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rouge), var(--vert));
+  border-radius: 2px;
+  margin: 20px 0 32px;
+}
+
+/* HIGHLIGHT BOX */
+.highlight-box {
+  background: var(--vert-l);
+  border: 1px solid var(--vert-m);
+  border-left: 4px solid var(--vert);
+  border-radius: 0 10px 10px 0;
+  padding: 18px 20px;
+  margin: 24px 0;
+  font-size: 14.5px;
+  color: var(--vert-d);
+  line-height: 1.65;
+}
+.highlight-box.rouge {
+  background: var(--rouge-l);
+  border-color: var(--rouge);
+  color: var(--rouge-d);
+}
+
+/* CRENEAU DEMO */
+.creneau-demo {
+  display: grid;
+  grid-template-columns: 120px repeat(5,1fr);
+  gap: 4px;
+  margin-top: 28px;
+  font-size: 12px;
+}
+.cren-head { background: var(--beige-d); padding: 8px 10px; border-radius: 6px; font-weight: 700; text-align: center; font-size: 11px; color: var(--soft); }
+.cren-label { background: var(--beige-d); padding: 8px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; color: var(--text); display: flex; align-items: center; }
+.cren-cell { border-radius: 6px; padding: 6px 8px; min-height: 60px; display: flex; flex-direction: column; gap: 3px; }
+.cren-empty { background: var(--beige); border: 1px solid var(--border); }
+.cren-full { background: var(--rouge-l); border: 1px solid var(--rouge); }
+.cren-partial { background: var(--vert-l); border: 1px solid var(--vert-m); }
+.cren-blocked { background: repeating-linear-gradient(45deg,#fee2e2,#fee2e2 4px,#fff 4px,#fff 8px); border: 1px solid var(--rouge); }
+.cren-chip { font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 3px; }
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { opacity: 0; animation: fadeInUp .6s ease forwards; }
+.fade-in-1 { animation-delay: .1s; }
+.fade-in-2 { animation-delay: .2s; }
+.fade-in-3 { animation-delay: .3s; }
+.fade-in-4 { animation-delay: .4s; }
+
+/* RESPONSIVE */
+@media(max-width:1000px) {
+  section { padding: 64px 24px; }
+  .hero-inner { grid-template-columns:1fr; gap:48px; }
+  .cards-grid { grid-template-columns:1fr 1fr; }
+  .cards-grid-4 { grid-template-columns:1fr 1fr; }
+  .roles-grid { grid-template-columns:1fr 1fr; }
+  .stats-row { grid-template-columns:1fr 1fr; }
+  .tech-grid { grid-template-columns:1fr; }
+  .flux { flex-direction:column; align-items:flex-start; gap:20px; }
+  .flux::before { display:none; }
+  nav { padding: 0 20px; }
+  .nav-links { display:none; }
+}
+@media(max-width:600px) {
+  .cards-grid { grid-template-columns:1fr; }
+  .roles-grid { grid-template-columns:1fr; }
+  .hero-stats { flex-direction:column; gap:20px; }
+  .demo-roles { flex-direction:column; align-items:center; }
+  h1 { font-size:30px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:38px;object-fit:contain">
+    </div>
+    <div class="nav-links">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="#roles">Les rôles</a>
+      <a href="#technique">Technique</a>
+      <a href="#imposer">Imposer les RDV</a>
+      <a href="#demo" class="nav-cta">Voir la démo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:52px;object-fit:contain;margin-bottom:28px;display:block">
+      <div class="hero-badge"><div class="hero-badge-dot"></div>Vic-en-Bigorre · Hautes-Pyrénées</div>
+      <h1 class="hero-title fade-in fade-in-1">
+        La réception de matières premières,<br>
+        <em>enfin digitalisée</em>
+      </h1>
+      <div class="divider"></div>
+      <p class="lead fade-in fade-in-2">
+        Fini le calendrier Outlook partagé et les camions qui arrivent n'importe quand.
+        Un portail dédié avec créneaux imposés, incompatibilités automatiques, accès mobile sécurisé
+        et rapports en temps réel — pour enfin maîtriser la réception.
+      </p>
+      <div class="hero-ctas fade-in fade-in-3">
+        <a href="https://reception-sanders.fr" target="_blank" class="btn-primary">🚀 Accéder au portail</a>
+        <a href="#demo" class="btn-secondary">Voir la démo →</a>
+      </div>
+      <div class="hero-stats fade-in fade-in-4">
+        <div><div class="hero-stat-val">40</div><div class="hero-stat-lbl">camions/jour max</div></div>
+        <div><div class="hero-stat-val">15</div><div class="hero-stat-lbl">matières gérées</div></div>
+        <div><div class="hero-stat-val">5</div><div class="hero-stat-lbl">rôles utilisateurs</div></div>
+        <div><div class="hero-stat-val">100%</div><div class="hero-stat-lbl">web, zéro install</div></div>
+      </div>
+    </div>
+    <div class="hero-mockup fade-in fade-in-2">
+      <div class="mockup-window">
+        <div class="mockup-bar">
+          <div class="mockup-dots">
+            <div class="mockup-dot" style="background:#ff5f56"></div>
+            <div class="mockup-dot" style="background:#ffbd2e"></div>
+            <div class="mockup-dot" style="background:#27c93f"></div>
+          </div>
+          <div class="mockup-url">reception-sanders.fr</div>
+        </div>
+        <div class="mockup-body">
+          <!-- Mini dashboard mockup -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+            <div style="background:var(--vert-l);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--vert)">12</div><div style="font-size:10px;color:var(--soft)">Aujourd'hui</div></div>
+            <div style="background:#FFF7E6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--orange)">2</div><div style="font-size:10px;color:var(--soft)">En attente</div></div>
+            <div style="background:#EFF6FF;border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--blue)">38</div><div style="font-size:10px;color:var(--soft)">À venir</div></div>
+            <div style="background:var(--rouge-l);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:700;color:var(--rouge)">312T</div><div style="font-size:10px;color:var(--soft)">Tonnage</div></div>
+          </div>
+          <div style="background:var(--beige);border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="font-size:11px;font-weight:700;color:var(--soft);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Créneaux du jour</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-family:monospace;color:var(--soft);width:80px">06:00–08:00</span><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:100%;height:100%;background:var(--rouge);border-radius:3px"></div></div><span style="font-size:10px;color:var(--rouge);font-weight:600">Complet</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-family:monospace;color:var(--soft);width:80px">08:00–10:00</span><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:66%;height:100%;background:var(--vert);border-radius:3px"></div></div><span style="font-size:10px;color:var(--vert);font-weight:600">4/6</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-family:monospace;color:var(--soft);width:80px">10:00–12:00</span><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:33%;height:100%;background:var(--orange);border-radius:3px"></div></div><span style="font-size:10px;color:var(--orange);font-weight:600">2/6</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;font-family:monospace;color:var(--soft);width:80px">12:00–14:00</span><div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="width:16%;height:100%;background:var(--vert);border-radius:3px"></div></div><span style="font-size:10px;color:var(--vert);font-weight:600">1/6</span></div>
+            </div>
+          </div>
+          <div style="background:var(--rouge-l);border:1px solid var(--rouge);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px">🚨</span>
+            <span style="font-size:11px;color:var(--rouge);font-weight:600">1 camion non arrivé — Trans Gascogne · Reporter ?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LE PROBLÈME -->
+<section class="section-alt">
+  <div class="section-inner">
+    <div class="eyebrow">Le contexte</div>
+    <h2>Outlook Calendrier, c'est insuffisant pour la réception</h2>
+    <div class="divider"></div>
+    <div class="highlight-box rouge" style="margin-bottom:28px">
+      <strong>"On ne sait jamais les heures d'arrivée des camions."</strong><br>
+      C'est la réalité quotidienne de la réception. Un calendrier Outlook partagé n'est pas fait pour gérer des flux de livraison avec des règles métier complexes. Il faut un outil dédié.
+    </div>
+    <div class="cards-grid cards-grid-2">
+      <div style="background:var(--rouge-l);border:1px solid var(--rouge);border-radius:14px;padding:28px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:22px">📅</span>
+          <span style="font-size:15px;font-weight:700;color:var(--rouge)">Situation actuelle — Outlook Calendrier</span>
+        </div>
+        <div style="background:var(--rouge);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:14px;letter-spacing:.5px">CE QUE VOUS VIVEZ AUJOURD'HUI</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>Outlook partagé — n'importe qui peut modifier, supprimer ou écraser un RDV sans trace</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>Pas de créneau horaire imposé — le camion arrive "dans la journée", personne ne sait quand</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>5 camions peuvent arriver en même temps — embouteillage, perte de temps, stress</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>Incompatibilités matières jamais vérifiées — un Soja Bio après un Soja Conv, personne ne le voit</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>Camion non arrivé = appels téléphoniques en chaîne, aucune trace, report improvisé</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>Aucun historique fiable — impossible de savoir qui a livré quoi, quand, et si c'était à l'heure</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--rouge);font-weight:700;flex-shrink:0">✗</span><span>La direction n'a aucune visibilité — pas de chiffres, pas de rapports, pas de pilotage</span></li>
+        </ul>
+      </div>
+      <div style="background:var(--vert-l);border:1px solid var(--vert-m);border-radius:14px;padding:28px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <span style="font-size:22px">🚀</span>
+          <span style="font-size:15px;font-weight:700;color:var(--vert)">Avec le portail dédié</span>
+        </div>
+        <div style="background:var(--vert);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-block;margin-bottom:14px;letter-spacing:.5px">CE QUE ÇA CHANGE</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Créneau de 2h imposé — le camion sait qu'il doit être là entre 8h et 10h, pas "dans la journée"</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Max 4 à 6 camions par créneau selon la matière — plus d'embouteillage, flux maîtrisé</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Incompatibilités vérifiées automatiquement — le transporteur ne peut pas choisir un créneau incompatible</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Accès mobile sécurisé — le chauffeur vérifie son RDV depuis son téléphone, depuis la route</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Non-arrivé signalé en 1 clic — report automatique sur le prochain créneau compatible</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Historique complet et inviolable — qui a livré quoi, quand, et si c'était à l'heure</span></li>
+          <li style="display:flex;gap:10px;font-size:14px;color:var(--soft)"><span style="color:var(--vert);font-weight:700;flex-shrink:0">✓</span><span>Rapports PDF pour la direction — ponctualité par transporteur, tonnage par matière</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTLOOK VS PORTAIL -->
+<section style="background:var(--text);padding:64px 40px">
+  <div class="section-inner">
+    <div class="eyebrow white">Comparaison directe</div>
+    <h2 style="color:#fff;margin-bottom:32px">Outlook Calendrier vs Portail dédié</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div style="background:rgba(200,16,46,.1);border:1px solid rgba(200,16,46,.3);border-radius:14px;padding:24px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <span style="font-size:20px">📅</span>
+          <span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.7)">Outlook Calendrier</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Le transporteur bloque une journée entière — impossible de savoir l'heure exacte</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Pas de limite : 10 camions peuvent se retrouver le même matin</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">N'importe qui peut modifier ou supprimer un RDV sans laisser de trace</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Aucune vérification des incompatibilités matières</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Camion absent = série d'appels téléphoniques, chaos, pas de report structuré</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Interface PC uniquement, pas adaptée au téléphone du chauffeur</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#f87171;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.55)">Aucun rapport de ponctualité — impossible d'identifier les transporteurs problématiques</span></div>
+        </div>
+      </div>
+      <div style="background:rgba(46,125,50,.1);border:1px solid rgba(46,125,50,.3);border-radius:14px;padding:24px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <span style="font-size:20px">✅</span>
+          <span style="font-size:14px;font-weight:700;color:rgba(255,255,255,.7)">Portail dédié Sanders Euralis</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Créneau de 2h imposé — le camion sait exactement quand se présenter</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Max 4 à 6 camions par créneau selon la durée de déchargement de la matière</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Accès sécurisé par rôle — chaque utilisateur voit et modifie uniquement ce qui le concerne</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Incompatibilités bloquées automatiquement — impossible de faire une erreur</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Report en 1 clic sur le prochain créneau compatible — rapide, traçé, sans appel</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">PWA installable sur téléphone — le chauffeur accède depuis la route, sans PC</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-size:16px;flex-shrink:0">→</span><span style="font-size:13px;color:rgba(255,255,255,.75)">Rapport de ponctualité mensuel — identifiez et gérez les transporteurs défaillants</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Résumé clé -->
+    <div style="margin-top:24px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start">
+      <span style="font-size:24px;flex-shrink:0">💡</span>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:4px">La différence fondamentale</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.65">Outlook est un outil généraliste de planification. Ce portail est un outil métier conçu spécifiquement pour la réception de matières premières agricoles avec ses contraintes propres : incompatibilités, durées variables, flux multi-transporteurs, traçabilité et reporting. Ce n'est pas le même outil pour le même besoin.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHIFFRES -->
+<section class="section-dark">
+  <div class="section-inner">
+    <div class="eyebrow white">Données du site</div>
+    <h2 style="color:#fff">Ce que gère le portail au quotidien</h2>
+    <div class="stats-row">
+      <div class="stat-block"><div class="stat-block-val" style="color:#22c55e">40</div><div class="stat-block-lbl">Camions max / jour</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#38bdf8">6</div><div class="stat-block-lbl">Créneaux de 2h (6h–18h)</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#f59e0b">15</div><div class="stat-block-lbl">Matières premières</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#a78bfa">8</div><div class="stat-block-lbl">Règles d'incompatibilité</div></div>
+    </div>
+    <div class="stats-row" style="margin-top:2px">
+      <div class="stat-block"><div class="stat-block-val" style="color:#f87171">20–35</div><div class="stat-block-lbl">Min / déchargement</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#22c55e">3–6</div><div class="stat-block-lbl">Camions max / créneau</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#38bdf8">5</div><div class="stat-block-lbl">Rôles utilisateurs</div></div>
+      <div class="stat-block"><div class="stat-block-val" style="color:#f59e0b">100%</div><div class="stat-block-lbl">Automatisé</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FONCTIONNALITÉS -->
+<section id="fonctionnalites">
+  <div class="section-inner">
+    <div class="eyebrow">Fonctionnalités</div>
+    <h2>Tout ce que fait le portail</h2>
+    <div class="divider"></div>
+    <p class="lead">Un système complet pensé pour les contraintes réelles de la réception agricole.</p>
+    <div class="cards-grid">
+      <div class="card vert">
+        <div class="card-icon">🗓</div>
+        <div class="card-title">Prise de RDV en ligne</div>
+        <div class="card-desc">Le transporteur choisit sa date, sa matière, son créneau. Le système vérifie automatiquement la disponibilité et les incompatibilités. Confirmation immédiate sans intervention humaine.</div>
+        <span class="card-tag">✓ Confirmation automatique</span>
+      </div>
+      <div class="card rouge">
+        <div class="card-icon">🚫</div>
+        <div class="card-title">Gestion des incompatibilités</div>
+        <div class="card-desc">Certaines matières ne peuvent pas se succéder dans le même silo. Le portail bloque automatiquement les créneaux incompatibles et informe le transporteur du créneau suivant disponible.</div>
+        <span class="card-tag" style="background:var(--rouge-l);color:var(--rouge)">✓ Règles métier automatiques</span>
+      </div>
+      <div class="card orange">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Tableau de bord temps réel</div>
+        <div class="card-desc">Vue en direct de la journée : camions arrivés, non-arrivés, tonnage livré, ponctualité. Alertes automatiques si un camion ne se présente pas. Mise à jour toutes les 30 secondes.</div>
+        <span class="card-tag" style="background:#FFF7E6;color:var(--orange)">✓ Actualisation automatique</span>
+      </div>
+      <div class="card blue">
+        <div class="card-icon">🔄</div>
+        <div class="card-title">Report intelligent</div>
+        <div class="card-desc">Un camion non arrivé ? En un clic, le responsable reporte sur le prochain créneau disponible ET compatible. Le système propose uniquement les créneaux qui respectent les règles d'incompatibilité.</div>
+        <span class="card-tag" style="background:#EFF6FF;color:var(--blue)">✓ Respecte les incompatibilités</span>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">📈</div>
+        <div class="card-title">Rapports & Ponctualité</div>
+        <div class="card-desc">Classement des transporteurs par ponctualité, tonnage livré par matière, évolution sur 7/30/90 jours. Export PDF complet pour la direction, export CSV pour l'analyse.</div>
+        <span class="card-tag" style="background:#F5F3FF;color:var(--purple)">✓ Admin & Responsable uniquement</span>
+      </div>
+      <div class="card vert">
+        <div class="card-icon">🗓</div>
+        <div class="card-title">Calendrier multi-vues</div>
+        <div class="card-desc">Vue mois (macro), vue semaine (opérationnelle), vue jour (détaillée). Chaque créneau affiche la matière précédente pour anticiper les restrictions. Planning journée imprimable en un clic.</div>
+        <span class="card-tag">✓ Mois / Semaine / Jour</span>
+      </div>
+      <div class="card orange">
+        <div class="card-icon">⏱</div>
+        <div class="card-title">Durées par matière</div>
+        <div class="card-desc">Chaque matière a sa durée de déchargement configurée (20 à 35 min). Le nombre de camions autorisés par créneau se calcule automatiquement : 120 min ÷ durée = places disponibles.</div>
+        <span class="card-tag" style="background:#FFF7E6;color:var(--orange)">✓ Configurable par l'Admin</span>
+      </div>
+      <div class="card rouge">
+        <div class="card-icon">📅</div>
+        <div class="card-title">Fermetures & Jours fériés</div>
+        <div class="card-desc">Bloquez une journée entière en un clic avec motif. Import automatique des 11 jours fériés français 2025 et 2026. Créneaux réservés pour une matière spécifique.</div>
+        <span class="card-tag" style="background:var(--rouge-l);color:var(--rouge)">✓ Jours fériés auto</span>
+      </div>
+      <div class="card blue">
+        <div class="card-icon">📱</div>
+        <div class="card-title">Application mobile (PWA)</div>
+        <div class="card-desc">Installable sur iPhone et Android comme une vraie app depuis le navigateur. Accès depuis l'écran d'accueil, sans passer par l'App Store. Interface responsive optimisée mobile.</div>
+        <span class="card-tag" style="background:#EFF6FF;color:var(--blue)">✓ iOS & Android</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section id="comment" class="section-alt">
+  <div class="section-inner">
+    <div class="eyebrow">Fonctionnement</div>
+    <h2>Le flux complet d'une livraison</h2>
+    <div class="divider"></div>
+    <p class="lead">De la prise de RDV à la livraison confirmée — tout est automatisé.</p>
+    <div class="flux">
+      <div class="flux-step">
+        <div class="flux-num vert">1</div>
+        <div class="flux-title">Transporteur prend RDV</div>
+        <div class="flux-desc">Se connecte, choisit date + matière + créneau. Le système vérifie tout en temps réel.</div>
+      </div>
+      <div class="flux-step">
+        <div class="flux-num vert">2</div>
+        <div class="flux-title">Confirmation automatique</div>
+        <div class="flux-desc">Si créneau compatible et disponible → RDV confirmé instantanément. Zéro intervention humaine.</div>
+      </div>
+      <div class="flux-step">
+        <div class="flux-num orange">3</div>
+        <div class="flux-title">Jour J — Suivi en direct</div>
+        <div class="flux-desc">L'employé voit tous les camions du jour. Il marque ❌ si un camion ne se présente pas.</div>
+      </div>
+      <div class="flux-step">
+        <div class="flux-num rouge">4</div>
+        <div class="flux-title">Non-arrivé signalé</div>
+        <div class="flux-desc">Alerte rouge sur le tableau de bord. Motif saisi. Le responsable est informé.</div>
+      </div>
+      <div class="flux-step">
+        <div class="flux-num blue">5</div>
+        <div class="flux-title">Report en 1 clic</div>
+        <div class="flux-desc">Le responsable choisit parmi les créneaux compatibles proposés. Report confirmé automatiquement.</div>
+      </div>
+      <div class="flux-step">
+        <div class="flux-num purple">6</div>
+        <div class="flux-title">Rapports & Analyses</div>
+        <div class="flux-desc">Tout est tracé. Ponctualité par transporteur, tonnage par matière, historique complet.</div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:40px">
+      <strong>Principe clé :</strong> Par défaut, tout RDV confirmé est considéré comme livré. L'employé n'a à agir <strong>que si le camion ne vient pas</strong>. Cela réduit au minimum le travail de saisie.
+    </div>
+  </div>
+</section>
+
+<!-- RÔLES -->
+<section id="roles">
+  <div class="section-inner">
+    <div class="eyebrow">Les utilisateurs</div>
+    <h2>5 rôles, 5 espaces dédiés</h2>
+    <div class="divider"></div>
+    <p class="lead">Chaque utilisateur voit uniquement ce dont il a besoin. Pas de confusion, pas d'accès inutiles.</p>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-avatar" style="background:#fdf0f2"><span style="font-size:24px">👨‍💼</span></div>
+        <div class="role-name">Administrateur</div>
+        <div class="role-badge" style="background:var(--rouge-l);color:var(--rouge)">Accès total</div>
+        <div class="role-features">
+          <div class="role-feature">Tout voir et tout modifier</div>
+          <div class="role-feature">Gérer les utilisateurs</div>
+          <div class="role-feature">Configurer les durées matières</div>
+          <div class="role-feature">Paramètres du site</div>
+          <div class="role-feature">Rapports complets + PDF</div>
+          <div class="role-feature">Fermetures exceptionnelles</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-avatar" style="background:var(--vert-l)"><span style="font-size:24px">👩‍💼</span></div>
+        <div class="role-name">Responsable</div>
+        <div class="role-badge" style="background:#FFF7E6;color:var(--orange)">Gestion</div>
+        <div class="role-features">
+          <div class="role-feature">Mêmes droits qu'Admin sauf paramètres</div>
+          <div class="role-feature">Gérer les RDV et créneaux</div>
+          <div class="role-feature">Reporter les non-arrivés</div>
+          <div class="role-feature">Rapports & ponctualité</div>
+          <div class="role-feature">Gérer les matières</div>
+          <div class="role-feature">Voir le calendrier complet</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-avatar" style="background:#EFF6FF"><span style="font-size:24px">👨‍💻</span></div>
+        <div class="role-name">Employé</div>
+        <div class="role-badge" style="background:#EFF6FF;color:var(--blue)">Opérationnel</div>
+        <div class="role-features">
+          <div class="role-feature">Voir tous les RDV du jour</div>
+          <div class="role-feature">Marquer un camion non arrivé</div>
+          <div class="role-feature">Ajouter des commentaires</div>
+          <div class="role-feature">Accès au calendrier</div>
+          <div class="role-feature">Historique des livraisons</div>
+          <div class="role-feature">Planning imprimable</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-avatar" style="background:#FFF7E6"><span style="font-size:24px">🚛</span></div>
+        <div class="role-name">Transporteur</div>
+        <div class="role-badge" style="background:#FFF7E6;color:var(--orange)">Externe</div>
+        <div class="role-features">
+          <div class="role-feature">Créer ses propres RDV</div>
+          <div class="role-feature">Voir uniquement ses livraisons</div>
+          <div class="role-feature">Gérer ses chauffeurs</div>
+          <div class="role-feature">Historique de ses livraisons</div>
+          <div class="role-feature">Voir les créneaux disponibles</div>
+          <div class="role-feature">Calendrier en lecture</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-avatar" style="background:#F5F3FF"><span style="font-size:24px">🚜</span></div>
+        <div class="role-name">Chauffeur</div>
+        <div class="role-badge" style="background:#F5F3FF;color:var(--purple)">Terrain</div>
+        <div class="role-features">
+          <div class="role-feature">Créer ses propres RDV</div>
+          <div class="role-feature">Voir uniquement ses livraisons</div>
+          <div class="role-feature">Historique personnel</div>
+          <div class="role-feature">Lié à son entreprise</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INCOMPATIBILITÉS -->
+<section class="section-alt">
+  <div class="section-inner">
+    <div class="eyebrow">Logique métier</div>
+    <h2>La gestion des incompatibilités matières</h2>
+    <div class="divider"></div>
+    <p class="lead">Certaines matières ne peuvent pas se succéder dans un silo sans risque de contamination croisée ou de perte de certification. Le portail gère tout automatiquement.</p>
+
+    <div class="highlight-box" style="margin-top:24px">
+      <strong>Comment ça marche :</strong> Le système regarde la <strong>dernière matière livrée</strong> avant un créneau. Si la matière demandée est incompatible avec la précédente, le créneau est automatiquement affiché comme indisponible pour le transporteur — sans explication technique. Si une matière neutre passe entre les deux, l'incompatibilité est levée.
+    </div>
+
+    <div class="incompat-demo">
+      <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--soft);margin-bottom:16px">Règles d'incompatibilité configurées</div>
+      <div class="incompat-row">
+        <div class="mat-pill" style="background:#3B82F622;border:1px solid #3B82F644"><div class="mat-dot" style="background:#3B82F6"></div>Soja Conventionnel</div>
+        <div class="incompat-sign">✕ après</div>
+        <div class="mat-pill" style="background:#EAB30822;border:1px solid #EAB30844"><div class="mat-dot" style="background:#EAB308"></div>Maïs</div>
+        <div class="incompat-label">Risque de contamination croisée</div>
+      </div>
+      <div class="incompat-row">
+        <div class="mat-pill" style="background:#06B6D422;border:1px solid #06B6D444"><div class="mat-dot" style="background:#06B6D4"></div>Soja C2* (non OGM)</div>
+        <div class="incompat-sign">✕ après</div>
+        <div class="mat-pill" style="background:#3B82F622;border:1px solid #3B82F644"><div class="mat-dot" style="background:#3B82F6"></div>Soja Conventionnel</div>
+        <div class="incompat-label">Perte de certification non-OGM</div>
+      </div>
+      <div class="incompat-row">
+        <div class="mat-pill" style="background:#10B98122;border:1px solid #10B98144"><div class="mat-dot" style="background:#10B981"></div>Soja Bio</div>
+        <div class="incompat-sign">✕ après</div>
+        <div class="mat-pill" style="background:#3B82F622;border:1px solid #3B82F644"><div class="mat-dot" style="background:#3B82F6"></div>Soja Conventionnel</div>
+        <div class="incompat-label">Perte de certification Bio</div>
+      </div>
+      <div class="incompat-row">
+        <div class="mat-pill" style="background:#4ADE8022;border:1px solid #4ADE8044"><div class="mat-dot" style="background:#4ADE80"></div>Colza</div>
+        <div class="incompat-sign">✕ après</div>
+        <div class="mat-pill" style="background:#FBBF2422;border:1px solid #FBBF2444"><div class="mat-dot" style="background:#FBBF24"></div>Tournesol</div>
+        <div class="incompat-label">Mélange huiles indésirable</div>
+      </div>
+      <div class="incompat-row" style="border:none">
+        <div class="mat-pill" style="background:#A78BFA22;border:1px solid #A78BFA44"><div class="mat-dot" style="background:#A78BFA"></div>Tourteau Soja Bio</div>
+        <div class="incompat-sign">✕ après</div>
+        <div class="mat-pill" style="background:#6366F122;border:1px solid #6366F144"><div class="mat-dot" style="background:#6366F1"></div>Tourteau Soja Conv.</div>
+        <div class="incompat-label">Contamination certification Bio</div>
+      </div>
+    </div>
+
+    <div class="highlight-box rouge" style="margin-top:20px">
+      <strong>Important :</strong> Les règles sont entièrement configurables par l'Admin depuis l'onglet "Matières". On peut ajouter, modifier ou supprimer des règles à tout moment sans toucher au code.
+    </div>
+  </div>
+</section>
+
+<!-- CRÉNEAUX & DURÉES -->
+<section>
+  <div class="section-inner">
+    <div class="eyebrow">Capacité</div>
+    <h2>Créneaux & Durées de déchargement</h2>
+    <div class="divider"></div>
+    <p class="lead">Chaque matière a sa propre durée de déchargement. Le nombre de camions par créneau se calcule automatiquement.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:36px;align-items:start">
+      <div>
+        <h3 style="margin-bottom:16px">Durées par matière</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${[
+            {nom:'Céréales (Maïs, Blé, Orge…)',duree:20,max:6,color:'#EAB308'},
+            {nom:'Soja Conventionnel, Tournesol, Colza',duree:25,max:4,color:'#3B82F6'},
+            {nom:'Tourteaux, Soja C2*',duree:30,max:4,color:'#8B5CF6'},
+            {nom:'Soja Bio',duree:35,max:3,color:'#10B981'},
+          ].map(m=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--beige);border-radius:8px;border:1px solid var(--border)">
+              <div style="width:10px;height:10px;border-radius:50%;background:${m.color};flex-shrink:0"></div>
+              <div style="flex:1;font-size:13px;font-weight:500">${m.nom}</div>
+              <div style="font-size:12px;color:var(--soft)">${m.duree} min</div>
+              <div style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;background:${m.max>=6?'var(--vert-l)':m.max>=4?'#FFF7E6':'var(--rouge-l)'};color:${m.max>=6?'var(--vert)':m.max>=4?'var(--orange)':'var(--rouge)'};white-space:nowrap">Max ${m.max}/créneau</div>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--beige-d);border-radius:8px;font-size:13px;color:var(--soft)">
+          <strong>Formule :</strong> Durée créneau (120 min) ÷ Durée déchargement = Max camions
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:16px">Vue semaine — exemple</h3>
+        <div class="creneau-demo">
+          <div class="cren-head"></div>
+          <div class="cren-head">Lun 16</div>
+          <div class="cren-head">Mar 17</div>
+          <div class="cren-head">Mer 18</div>
+          <div class="cren-head">Jeu 19</div>
+          <div class="cren-head">Ven 20</div>
+
+          <div class="cren-label">06–08h</div>
+          <div class="cren-cell cren-full"><span class="cren-chip" style="background:#EAB30822;color:#EAB308">MAIS 28T</span><span class="cren-chip" style="background:#EAB30822;color:#EAB308">BLT 26T</span><span class="cren-chip" style="background:#EAB30822;color:#EAB308">ORG 25T</span></div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#3B82F622;color:#3B82F6">SJCONV 27T</span><span class="cren-chip" style="background:#3B82F622;color:#3B82F6">SJCONV 28T</span></div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#FBBF2422;color:#FBBF24">TOUR 30T</span><span class="cren-chip" style="background:#FBBF2422;color:#FBBF24">TOUR 28T</span></div>
+          <div class="cren-cell cren-empty"><span style="font-size:10px;color:var(--muted)">Libre</span></div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#10B98122;color:#10B981">SJBIO 27T</span></div>
+
+          <div class="cren-label">08–10h</div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#84CC1622;color:#84CC16">ORG 25T</span><span class="cren-chip" style="background:#EAB30822;color:#EAB308">MAIS 30T</span></div>
+          <div class="cren-cell cren-empty" style="border:1px dashed var(--rouge)"><span style="font-size:9px;color:var(--rouge);font-weight:600">↑ SJCONV<br>Restr.</span></div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#22C55E22;color:#22C55E">TRIT 25T</span></div>
+          <div class="cren-cell cren-blocked"><span style="font-size:9px;color:var(--rouge)">🔒 Fermé</span></div>
+          <div class="cren-cell cren-partial"><span class="cren-chip" style="background:#D9770622;color:#D97706">ORG 26T</span></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--rouge-l);border:1px solid var(--rouge);display:inline-block"></span>Complet</span>
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--vert-l);border:1px solid var(--vert-m);display:inline-block"></span>Partiel</span>
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:repeating-linear-gradient(45deg,#fee2e2,#fee2e2 3px,#fff 3px,#fff 6px);border:1px solid #fca5a5;display:inline-block"></span>Bloqué</span>
+          <span style="font-size:11px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--beige);border:1px dashed var(--rouge);display:inline-block"></span>Restriction</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPOSER LES RDV -->
+<section id="imposer" class="section-alt">
+  <div class="section-inner">
+    <div class="eyebrow rouge">Déploiement</div>
+    <h2>Comment imposer les RDV à tous les transporteurs ?</h2>
+    <div class="divider"></div>
+    <p class="lead">La question clé : comment passer d'un système informel à un portail obligatoire, sans frictions ?</p>
+
+    <div class="highlight-box" style="margin-top:28px">
+      <strong>Le principe :</strong> On ne change pas les habitudes en demandant — on change les habitudes en imposant une contrainte simple. Si le portail est <strong>la seule façon de livrer</strong>, tout le monde l'utilise.
+    </div>
+
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Créer un compte pour chaque transporteur</h4>
+          <p>L'Admin crée les comptes depuis l'onglet "Utilisateurs". Email + mot de passe. Le transporteur reçoit ses identifiants. Simple comme un accès email.</p>
+          <div class="tip">💡 Vous pouvez créer autant de comptes "Transporteur" que nécessaire. Chaque transporteur peut aussi créer ses propres chauffeurs.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Communication officielle — "à partir du [date], RDV obligatoire en ligne"</h4>
+          <p>Envoyez un email ou courrier à tous vos transporteurs avec le lien du portail et leurs identifiants. Précisez clairement qu'aucun camion ne sera accepté sans RDV confirmé sur le portail.</p>
+          <div class="tip">💡 Le portail est accessible depuis n'importe quel téléphone, tablette ou PC. Aucune installation requise.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Afficher le lien du portail à l'entrée du site</h4>
+          <p>Un QR code à l'entrée qui pointe vers le portail. Un chauffeur qui arrive sans RDV peut en faire la demande immédiatement depuis son téléphone — s'il reste une place sur le créneau.</p>
+          <div class="tip">💡 L'URL est courte et mémorisable : reception-sanders.fr</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Règle ferme : pas de RDV = pas de déchargement</h4>
+          <p>L'employé à la réception vérifie le statut dans le portail avant d'accepter un camion. Si le RDV n'est pas dans le système, le camion est refusé ou doit attendre un créneau disponible.</p>
+          <div class="tip">💡 Le planning journalier imprimable peut être affiché en salle de réception pour vérification rapide.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Suivi et incitation par la ponctualité</h4>
+          <p>Les rapports de ponctualité par transporteur créent une pression positive. Les meilleurs transporteurs peuvent être privilégiés pour les créneaux de choix. Les mauvais payeurs sont identifiés facilement.</p>
+          <div class="tip">💡 Le classement de ponctualité peut être communiqué mensuellement aux transporteurs pour les responsabiliser.</div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>Formation en 5 minutes — le portail est simple</h4>
+          <p>L'interface est pensée pour des chauffeurs non-techniciens. 3 étapes : se connecter → choisir une date → choisir un créneau. En cas de problème, l'Admin peut créer le RDV à la place du transporteur.</p>
+          <div class="tip">💡 La page d'accueil explique le fonctionnement. Les créneaux indisponibles s'affichent grisés avec la raison.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE TECHNIQUE -->
+<section id="technique" class="section-dark">
+  <div class="section-inner">
+    <div class="eyebrow white">Architecture</div>
+    <h2 style="color:#fff">Comment fonctionne le site techniquement ?</h2>
+    <div class="divider"></div>
+    <p class="lead white">Une architecture moderne, simple et sans serveur à maintenir.</p>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-card-title">Frontend</div>
+        <div class="tech-card-name">HTML · CSS · JavaScript</div>
+        <div class="tech-card-desc">Le site est une application web monopage (SPA). Tout le code tient en 3 fichiers : index.html, style.css, app.js. Aucun framework, aucune dépendance complexe. Chargement ultra-rapide.</div>
+        <span class="tech-badge">3 fichiers · ~3000 lignes</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-title">Base de données & Auth</div>
+        <div class="tech-card-name">Supabase (PostgreSQL)</div>
+        <div class="tech-card-desc">Supabase est une plateforme open-source basée sur PostgreSQL. Elle gère la base de données, l'authentification des utilisateurs, les autorisations par rôle et les APIs en temps réel. Plan gratuit suffisant pour ce volume.</div>
+        <span class="tech-badge">PostgreSQL · Auth · API REST</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-title">Hébergement</div>
+        <div class="tech-card-name">GitHub Pages</div>
+        <div class="tech-card-desc">Les fichiers statiques sont hébergés sur GitHub Pages — gratuit, fiable, HTTPS automatique. Pour un déploiement professionnel, migration possible vers OVH, Infomaniak ou tout hébergeur web standard en 10 minutes.</div>
+        <span class="tech-badge">Gratuit · HTTPS · CDN mondial</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-title">Sécurité</div>
+        <div class="tech-card-name">Authentification JWT + RLS</div>
+        <div class="tech-card-desc">Chaque utilisateur s'authentifie avec email + mot de passe. Les tokens JWT expirent automatiquement. Row Level Security (RLS) sur Supabase : chaque rôle ne voit que ses données autorisées, même si quelqu'un contourne l'interface.</div>
+        <span class="tech-badge">JWT · Row Level Security</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-title">PWA</div>
+        <div class="tech-card-name">Progressive Web App</div>
+        <div class="tech-card-desc">Le site peut être installé comme une application native sur iPhone et Android. Un Service Worker gère le cache pour une utilisation en conditions de réseau dégradé. Accessible depuis l'écran d'accueil.</div>
+        <span class="tech-badge">iOS · Android · Service Worker</span>
+      </div>
+      <div class="tech-card">
+        <div class="tech-card-title">Temps réel</div>
+        <div class="tech-card-name">Polling 30 secondes</div>
+        <div class="tech-card-desc">Le tableau de bord se rafraîchit automatiquement toutes les 30 secondes. Les données sont toujours à jour sans avoir à recharger la page. Système léger qui ne surcharge pas la base de données.</div>
+        <span class="tech-badge">Auto-refresh · Sans rechargement</span>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px">
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.5;margin-bottom:16px">Flux de données</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🌐</div>Navigateur<br><span style="opacity:.5;font-size:11px">Chrome/Safari/Firefox</span></div>
+        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
+        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">📁</div>GitHub Pages<br><span style="opacity:.5;font-size:11px">HTML/CSS/JS statiques</span></div>
+        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
+        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🔌</div>API Supabase<br><span style="opacity:.5;font-size:11px">REST + Auth</span></div>
+        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
+        <div style="background:rgba(46,125,50,.2);border:1px solid rgba(46,125,50,.4);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🗄️</div>PostgreSQL<br><span style="opacity:.5;font-size:11px">Base de données</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIF -->
+<section>
+  <div class="section-inner">
+    <div class="eyebrow">Comparatif</div>
+    <h2>Ce portail vs les alternatives</h2>
+    <div class="divider"></div>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Critère</th>
+          <th class="highlight">Ce portail</th>
+          <th>Excel partagé</th>
+          <th>ERP généraliste</th>
+          <th>Appels téléphoniques</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Prise de RDV autonome</td><td class="highlight check">✓ En ligne 24h/24</td><td class="cross">✗</td><td class="partial">Partiel</td><td class="cross">✗ Horaires bureau</td></tr>
+        <tr><td>Gestion incompatibilités</td><td class="highlight check">✓ Automatique</td><td class="cross">✗ Manuel</td><td class="partial">Selon config</td><td class="cross">✗ Mémoire humaine</td></tr>
+        <tr><td>Confirmation automatique</td><td class="highlight check">✓ Instantanée</td><td class="cross">✗</td><td class="partial">Variable</td><td class="cross">✗</td></tr>
+        <tr><td>Suivi ponctualité</td><td class="highlight check">✓ Temps réel</td><td class="partial">Manuel</td><td class="check">✓</td><td class="cross">✗</td></tr>
+        <tr><td>Rapport PDF direction</td><td class="highlight check">✓ En 1 clic</td><td class="partial">À construire</td><td class="check">✓</td><td class="cross">✗</td></tr>
+        <tr><td>Application mobile</td><td class="highlight check">✓ PWA native</td><td class="partial">Limité</td><td class="partial">Variable</td><td class="check">✓ Téléphone</td></tr>
+        <tr><td>Spécifique à vos règles</td><td class="highlight check">✓ 100% sur-mesure</td><td class="partial">Adapté</td><td class="cross">✗ Générique</td><td class="partial">Oui mais informel</td></tr>
+        <tr><td>Coût mensuel</td><td class="highlight check">✓ Quasi nul</td><td class="check">✓ Gratuit</td><td class="cross">✗ Élevé</td><td class="partial">Temps humain</td></tr>
+        <tr><td>Formation nécessaire</td><td class="highlight check">✓ 5 minutes</td><td class="partial">Modérée</td><td class="cross">✗ Importante</td><td class="check">✓ Aucune</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DÉMO -->
+<section id="demo" class="demo-section">
+  <div class="section-inner">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:44px;object-fit:contain;filter:brightness(0) invert(1);opacity:.9;margin-bottom:24px;display:block;margin-left:auto;margin-right:auto">
+    <div class="eyebrow white">Démonstration</div>
+    <h2 style="color:#fff;margin-bottom:16px">Testez le portail maintenant</h2>
+    <p style="color:rgba(255,255,255,.75);font-size:16px;max-width:560px;margin:0 auto 12px">Chaque bouton vous connecte directement dans le bon rôle — sans mot de passe, en un clic.</p>
+    <p style="color:rgba(255,255,255,.5);font-size:13px;margin-bottom:36px">Les données sont réalistes : 3 mois d'historique, incompatibilités visibles, non-arrivés à reporter.</p>
+    <div class="demo-roles">
+      <a href="https://reception-sanders.fr" target="_blank" class="demo-role-btn" onclick="this.innerHTML='⏳ Connexion...'">
+        <span class="demo-role-icon">👨‍💼</span>
+        <div><div style="font-size:12px;opacity:.7;margin-bottom:2px">Accès complet</div><div>Admin</div></div>
+      </a>
+      <a href="https://reception-sanders.fr" target="_blank" class="demo-role-btn">
+        <span class="demo-role-icon">👩‍💼</span>
+        <div><div style="font-size:12px;opacity:.7;margin-bottom:2px">Gestion + Rapports</div><div>Responsable</div></div>
+      </a>
+      <a href="https://reception-sanders.fr" target="_blank" class="demo-role-btn">
+        <span class="demo-role-icon">👨‍💻</span>
+        <div><div style="font-size:12px;opacity:.7;margin-bottom:2px">Vue opérationnelle</div><div>Employé</div></div>
+      </a>
+      <a href="https://reception-sanders.fr" target="_blank" class="demo-role-btn">
+        <span class="demo-role-icon">🚛</span>
+        <div><div style="font-size:12px;opacity:.7;margin-bottom:2px">Vue externe</div><div>Transporteur</div></div>
+      </a>
+      <a href="https://reception-sanders.fr" target="_blank" class="demo-role-btn">
+        <span class="demo-role-icon">🚜</span>
+        <div><div style="font-size:12px;opacity:.7;margin-bottom:2px">Vue terrain</div><div>Chauffeur</div></div>
+      </a>
+    </div>
+    <div style="margin-top:28px;background:rgba(255,255,255,.1);border-radius:10px;padding:14px 20px;display:inline-block">
+      <span style="font-size:13px;opacity:.8">🔐 Mot de passe universel démo : </span>
+      <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:#fff">Demo1234!</span>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section-alt">
+  <div class="section-inner">
+    <div class="eyebrow">Questions fréquentes</div>
+    <h2>Questions des décideurs</h2>
+    <div class="divider"></div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si internet tombe en panne sur le site ?</div>
+        <div class="faq-a">Le planning journalier imprimable permet à l'équipe de réception de travailler avec une feuille papier en cas de panne réseau. La PWA garde également en cache les dernières données chargées. En conditions normales, une connexion 4G/5G ou même 3G suffit pour utiliser le portail.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Les données sont-elles sécurisées et confidentielles ?</div>
+        <div class="faq-a">Oui. Les données sont stockées sur les serveurs Supabase (infrastructure AWS, régions EU). Chaque utilisateur n'accède qu'à ses données autorisées grâce au Row Level Security. Les mots de passe sont hachés (bcrypt), jamais stockés en clair. Les communications sont chiffrées HTTPS.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on connecter ce portail à notre ERP existant ?</div>
+        <div class="faq-a">Oui. Supabase expose une API REST standard. Il est techniquement possible de synchroniser les données avec un ERP (SAP, Sage, etc.) via des webhooks ou des appels API planifiés. Cette intégration nécessiterait un développement supplémentaire selon le système cible.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Combien de transporteurs et d'utilisateurs peut-on gérer ?</div>
+        <div class="faq-a">Le plan gratuit Supabase supporte jusqu'à 50 000 utilisateurs actifs par mois et 500 Mo de base de données — largement suffisant pour ce volume. En cas de croissance importante, le plan Pro Supabase (25$/mois) lève toutes les limites. Le portail lui-même ne pose aucune limite technique.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si un transporteur prend un RDV pour une matière incompatible ?</div>
+        <div class="faq-a">Impossible. Le système vérifie en temps réel les incompatibilités avant d'afficher les créneaux disponibles. Si la matière choisie est incompatible avec la dernière matière livrée sur un créneau donné, ce créneau n'apparaît tout simplement pas comme disponible pour le transporteur. Il ne peut pas forcer la main.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment migrer vers un hébergement professionnel plus tard ?</div>
+        <div class="faq-a">Migration triviale. Les 3 fichiers (index.html, style.css, app.js) se déposent sur n'importe quel hébergeur web en FTP. La base Supabase reste la même — aucune migration de données nécessaire. Possibilité d'utiliser un nom de domaine personnalisé (ex: reception.sanders-euralis.fr) avec un certificat SSL gratuit Let's Encrypt.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on ajouter d'autres sites Sanders / Euralis ?</div>
+        <div class="faq-a">Oui, deux approches : (1) Multi-sites dans la même application — ajouter un champ "site" sur les RDV et filtrer par site selon l'utilisateur. (2) Instances séparées — dupliquer le portail pour chaque site, chacun avec sa propre base Supabase. La deuxième approche est plus propre pour des volumes importants.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="section-vert">
+  <div class="section-inner" style="text-align:center">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:44px;object-fit:contain;filter:brightness(0) invert(1);opacity:.9;margin-bottom:24px;display:block;margin-left:auto;margin-right:auto">
+    <div class="eyebrow white">Prêt ?</div>
+    <h2 style="color:#fff;max-width:600px;margin:0 auto 16px">Un seul lien suffit pour commencer</h2>
+    <p style="color:rgba(255,255,255,.75);font-size:16px;max-width:480px;margin:0 auto 36px">Le portail est en ligne, les données sont chargées. Connectez-vous et explorez.</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+      <a href="https://reception-sanders.fr" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--vert);padding:14px 28px;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        🚀 Accéder au portail
+      </a>
+      <a href="#demo" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:#fff;padding:14px 28px;border-radius:10px;font-weight:600;font-size:15px;text-decoration:none;border:2px solid rgba(255,255,255,.4);transition:all .2s" onmouseover="this.style.borderColor='rgba(255,255,255,.8)'" onmouseout="this.style.borderColor='rgba(255,255,255,.4)'">
+        Voir les comptes démo
+      </a>
+    </div>
+    <div style="margin-top:48px;display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
+      <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:#fff">100%</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Web — zéro installation</div></div>
+      <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:#fff">5 sec</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Temps de chargement</div></div>
+      <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:#fff">24/7</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Accessible en permanence</div></div>
+      <div style="text-align:center"><div style="font-size:28px;font-weight:700;color:#fff">∞</div><div style="font-size:12px;color:rgba(255,255,255,.6)">Historique conservé</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6PPkVZL7456aeIb1XpFsaFHzyT4ytFxehhg&s" alt="Sanders Euralis" style="height:44px;object-fit:contain;filter:brightness(0) invert(1);opacity:.8;margin-bottom:14px"><div class="footer-logo" style="font-size:14px;opacity:.6;font-family:'DM Sans',sans-serif;font-weight:400">Portail Réception Matières Premières</div>
+    <div class="footer-desc">Site de Vic-en-Bigorre · 193 Impasse Lautrec, 65500 Vic-en-Bigorre</div>
+    <div class="footer-links">
+      <a href="https://reception-sanders.fr" target="_blank">Accéder au portail</a>
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#roles">Les rôles</a>
+      <a href="#technique">Architecture</a>
+      <a href="#imposer">Imposer les RDV</a>
+      <a href="#demo">Démo</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll actif dans la nav
+const sections=document.querySelectorAll('section[id]');
+const links=document.querySelectorAll('.nav-links a[href^="#"]');
+window.addEventListener('scroll',()=>{
+  let current='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-100)current=s.id;});
+  links.forEach(a=>{
+    a.style.color=a.getAttribute('href')==='#'+current?'var(--vert)':'';
+  });
+});
+
+// Animations scroll
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.style.animationPlayState='running';});
+},{threshold:.1});
+document.querySelectorAll('.fade-in').forEach(el=>{
+  el.style.animationPlayState='paused';
+  observer.observe(el);
+});
+
+// FAQ
+document.querySelectorAll('.faq-q').forEach(q=>{
+  q.addEventListener('click',()=>{
+    const item=q.parentElement;
+    const wasOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+    if(!wasOpen)item.classList.add('open');
+  });
+});
+
+// Smooth scroll nav
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+</script>
+</body>
+</html>
