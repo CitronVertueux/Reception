@@ -7,7 +7,14 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ROLE_FR={admin:'Administrateur',responsable:'Responsable',employe:'Employé',transporteur:'Transporteur',chauffeur:'Chauffeur'};
 const ROLE_BADGE={admin:'br',responsable:'bo',employe:'bb',transporteur:'bg',chauffeur:'bgy'};
 const CRENEAUX=['06:00–08:00','08:00–10:00','10:00–12:00','12:00–14:00','14:00–16:00','16:00–18:00'];
-const MAX_PAR_CRENEAU=3;
+const MAX_PAR_CRENEAU=7; // défaut global
+const CRENEAU_DUREE_MIN=120; // durée d'un créneau en minutes
+// Calcule le max par créneau pour une matière donnée
+function maxPourMatiere(matId){
+  const m=matById(matId);
+  if(!m||!m.duree_min) return MAX_PAR_CRENEAU;
+  return Math.max(1, Math.floor(CRENEAU_DUREE_MIN / m.duree_min));
+}
 const JOURS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 const fmt=d=>d.toISOString().split('T')[0];
@@ -18,14 +25,14 @@ const ST={confirme:{lbl:'Confirmé',cls:'bg'},non_arrive:{lbl:'Non arrivé',cls:
 const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#3B82F6','#F59E0B','#10B981','#8B5CF6','#EC4899','#06B6D4'];
 
 const TABS={
-  admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'settings',lbl:'⚙️ Paramètres'}],
-  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
+  admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'tour',lbl:'📺 Tour de contrôle'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'durees',lbl:'⏱ Durées'},{id:'settings',lbl:'⚙️ Paramètres'}],
+  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'tour',lbl:'📺 Tour de contrôle'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
   employe:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'}],
   transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'new',lbl:'➕ Nouveau'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
   chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau'},{id:'hist',lbl:'📁 Historique'}],
 };
 const BN_TABS={
-  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'},{id:'users',icon:'👥',lbl:'Comptes'}],
+  admin:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'tour',icon:'📺',lbl:'Contrôle'},{id:'rapports',icon:'📈',lbl:'Rapports'}],
   responsable:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'rapports',icon:'📈',lbl:'Rapports'},{id:'matieres',icon:'🌾',lbl:'Matières'}],
   employe:[{id:'dash',icon:'📊',lbl:'Bord'},{id:'rdv',icon:'📅',lbl:'RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'hist',icon:'📁',lbl:'Histo'}],
   transporteur:[{id:'rdv',icon:'📅',lbl:'Mes RDV'},{id:'cal',icon:'🗓',lbl:'Calendrier'},{id:'new',icon:'➕',lbl:'Nouveau'},{id:'drivers',icon:'👷',lbl:'Chauffeurs'},{id:'hist',icon:'📁',lbl:'Histo'}],
@@ -60,12 +67,30 @@ function lastMatiereBeforeSlot(date,creneau){
 }
 function checkSlot(date,creneau,matId){
   if(isBlocked(date,creneau))return{ok:false,reason:'blocked'};
-  if(slotCount(date,creneau)>=MAX_PAR_CRENEAU)return{ok:false,reason:'full'};
+  // Vérif capacité : chaque matière dans le créneau consomme sa propre durée
+  const rdvsCren=RDV.filter(r=>r.date===date&&r.creneau===creneau&&r.statut!=='annule');
+  const tempsOccupe=rdvsCren.reduce((s,r)=>{
+    const m=matById(r.matiere_id);return s+(m?.duree_min||20);
+  },0);
+  const dureeNouv=(matById(matId)?.duree_min||20);
+  if(tempsOccupe+dureeNouv>CRENEAU_DUREE_MIN)return{ok:false,reason:'full'};
   const res=slotReservedFor(date,creneau);
   if(res&&res!==matId)return{ok:false,reason:'reserved',mat:res};
   const last=lastMatiereBeforeSlot(date,creneau);
   if(last&&areIncompat(last,matId))return{ok:false,reason:'incompat',last};
   return{ok:true};
+}
+// Capacité restante en minutes pour un créneau
+function minutesRestantes(date,creneau){
+  const rdvsCren=RDV.filter(r=>r.date===date&&r.creneau===creneau&&r.statut!=='annule');
+  const tempsOccupe=rdvsCren.reduce((s,r)=>{const m=matById(r.matiere_id);return s+(m?.duree_min||20);},0);
+  return Math.max(0,CRENEAU_DUREE_MIN-tempsOccupe);
+}
+// Nombre de RDV restants possible pour une matière donnée
+function placesRestantes(date,creneau,matId){
+  const min=minutesRestantes(date,creneau);
+  const duree=matById(matId)?.duree_min||20;
+  return Math.floor(min/duree);
 }
 // Matières compatibles avec la précédente pour un créneau donné
 function matiereCompatibles(date,creneau){
@@ -222,12 +247,14 @@ function switchView(id){
   cv=id;
   document.querySelectorAll('.d-tab').forEach(b=>b.classList.toggle('active',b.dataset.id===id));
   Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
-  const renders={dash:renderDash,rdv:renderRDV,cal:renderCal,hist:renderHist,rapports:renderRapports,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,settings:renderSettings};
+  const renders={dash:renderDash,rdv:renderRDV,cal:renderCal,hist:renderHist,rapports:renderRapports,tour:renderTour,slots:renderSlots,matieres:renderMatieres,new:renderNew,users:renderUsers,drivers:renderDrivers,durees:renderDurees,settings:renderSettings};
   document.getElementById('dash-body').innerHTML=(renders[id]||(() =>''))();
   if(id==='dash')setTimeout(buildCharts,50);
   if(id==='hist')setTimeout(applyFilters,50);
   if(id==='cal')setTimeout(()=>renderCalContent(),50);
   if(id==='rapports')setTimeout(buildRapports,50);
+  if(id==='tour')setTimeout(initTour,50);
+  if(id!=='tour')stopTour();
   updateBottomNav();
 }
 
@@ -1164,7 +1191,9 @@ function updateSlots(){
     const opt=document.createElement('option');
     if(check.ok){
       opt.value=c;
-      opt.textContent=c+' ('+( MAX_PAR_CRENEAU-slotCount(date,c))+' place(s))';
+      const places=placesRestantes(date,c,matId);
+      const minRest=minutesRestantes(date,c);
+      opt.textContent=c+' ('+places+' place(s) — '+minRest+'min restantes)';
     } else {
       opt.value='';opt.disabled=true;
       let reason='Indisponible';
@@ -1392,6 +1421,308 @@ function openAddDriver(){
     hideLoader();closeModal();switchView('drivers');showToast('Chauffeur créé');
   };
   document.getElementById('modal').classList.add('show');
+}
+
+// ══ TOUR DE CONTRÔLE ══
+function getSaison(){
+  const m=now.getMonth()+1;
+  if(m===12||(m===1&&now.getDate()<15)) return 'noel';
+  if(m===1||m===2) return 'hiver';
+  if(m>=3&&m<=5) return 'printemps';
+  if(m>=6&&m<=8) return 'ete';
+  return 'automne';
+}
+
+function getSaisonTheme(){
+  const s=getSaison();
+  const themes={
+    noel:  {bg:'#0a1628',accent:'#C8102E',accent2:'#22c55e',emoji:'🎄',label:'Joyeuses Fêtes'},
+    hiver: {bg:'#0a1628',accent:'#38bdf8',accent2:'#94a3b8',emoji:'❄️',label:'Hiver'},
+    printemps:{bg:'#0a1a10',accent:'#22c55e',accent2:'#84cc16',emoji:'🌸',label:'Printemps'},
+    ete:   {bg:'#1a1000',accent:'#f59e0b',accent2:'#EAB308',emoji:'☀️',label:'Été'},
+    automne:{bg:'#150a00',accent:'#D97706',accent2:'#B45309',emoji:'🍂',label:'Automne'},
+  };
+  return themes[s]||themes.hiver;
+}
+
+function renderTour(){
+  const th=getSaisonTheme();
+  const saison=getSaison();
+  return`
+  <div class="pg-h">
+    <div><h2>📺 Tour de contrôle</h2><p>Vue temps réel — ${th.emoji} ${th.label}</p></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-p sm" onclick="printPlanning()">🖨️ Planning</button>
+      <button class="btn-s sm" onclick="switchView('rdv')">← Retour RDV</button>
+    </div>
+  </div>
+  <div id="tour-body"></div>`;
+}
+
+let tourInterval=null;
+function initTour(){
+  renderTourContent();
+  if(tourInterval)clearInterval(tourInterval);
+  tourInterval=setInterval(renderTourContent,5000);
+}
+function stopTour(){if(tourInterval){clearInterval(tourInterval);tourInterval=null;}}
+
+function renderTourContent(){
+  const body=document.getElementById('tour-body');if(!body)return;
+  const th=getSaisonTheme();
+  const saison=getSaison();
+  const rdvsAuj=RDV.filter(r=>r.date===todayStr).sort((a,b)=>CRENEAUX.indexOf(a.creneau)-CRENEAUX.indexOf(b.creneau));
+  const livres=rdvsAuj.filter(r=>r.statut==='confirme').length;
+  const nonArrives=rdvsAuj.filter(r=>r.statut==='non_arrive');
+  const total=rdvsAuj.filter(r=>r.statut!=='annule').length;
+  const tonnage=rdvsAuj.filter(r=>r.statut==='confirme').reduce((s,r)=>s+r.tonnage,0);
+  const ponct=total>0?Math.round(livres/total*100):0;
+  const tousArrivés=total>0&&livres===total&&nonArrives.length===0;
+
+  // Confettis si tous arrivés
+  if(tousArrivés&&!document.getElementById('confetti-canvas')){
+    launchConfetti();
+  }
+
+  // Couleurs dynamiques selon saison
+  const pColor=p=>p>=90?'#22c55e':p>=70?'#f59e0b':'#f87171';
+
+  // Grouper RDV par créneau
+  const byCreneau={};
+  CRENEAUX.forEach(c=>{byCreneau[c]=rdvsAuj.filter(r=>r.creneau===c);});
+
+  // Décoration saisonnière
+  const saisonDeco={
+    noel:'<div style="position:absolute;top:8px;right:14px;font-size:22px;opacity:.3">🎄❄️🎅</div>',
+    ete:'<div style="position:absolute;top:8px;right:14px;font-size:22px;opacity:.25">☀️🌻🌡️</div>',
+    hiver:'<div style="position:absolute;top:8px;right:14px;font-size:22px;opacity:.25">❄️⛄🌨️</div>',
+    printemps:'<div style="position:absolute;top:8px;right:14px;font-size:22px;opacity:.25">🌸🌿🦋</div>',
+    automne:'<div style="position:absolute;top:8px;right:14px;font-size:22px;opacity:.25">🍂🍁🌰</div>',
+  }[saison]||'';
+
+  body.innerHTML=`
+  <style>
+    .tdc{background:${th.bg};border-radius:14px;padding:16px;font-family:'DM Sans',sans-serif;position:relative;overflow:hidden}
+    .tdc-kpi{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center}
+    .tdc-kpi-v{font-size:28px;font-weight:700;line-height:1;margin-bottom:3px}
+    .tdc-kpi-l{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+    .tdc-panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;overflow:hidden;margin-bottom:12px}
+    .tdc-panel-h{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.2)}
+    .tdc-panel-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.45)}
+    .tdc-row{display:grid;grid-template-columns:100px 1fr auto;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid rgba(255,255,255,.05);transition:background .15s}
+    .tdc-row:last-child{border-bottom:none}
+    .tdc-row:hover{background:rgba(255,255,255,.05)}
+    .tdc-cren-h{display:flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(0,0,0,.25);border-bottom:1px solid rgba(255,255,255,.05)}
+    .tdc-bar-bg{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+    .tdc-bar{height:100%;border-radius:3px;transition:width .6s ease}
+    .tdc-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap}
+    .bdg-ok{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+    .bdg-att{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+    .bdg-na{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+    .bdg-ann{background:rgba(148,163,184,.1);color:#64748b;border:1px solid rgba(148,163,184,.2)}
+    .pulse-live{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pl 1.5s infinite;display:inline-block}
+    @keyframes pl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+    .alert-blink{animation:ab 1.2s infinite}
+    @keyframes ab{0%,100%{opacity:1}50%{opacity:.4}}
+    .tdc-clock{font-size:26px;font-weight:700;color:${th.accent};letter-spacing:2px;font-variant-numeric:tabular-nums}
+    .ticker-wrap{background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.06);padding:6px 14px;overflow:hidden;border-radius:0 0 14px 14px}
+    .ticker-inner{display:inline-block;white-space:nowrap;animation:tick 30s linear infinite;font-size:11px;color:rgba(255,255,255,.35)}
+    @keyframes tick{from{transform:translateX(100%)}to{transform:translateX(-200%)}}
+    .tousarr{background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.4);border-radius:10px;padding:12px 16px;text-align:center;margin-bottom:12px;animation:pop .5s ease}
+    @keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}}
+  </style>
+
+  <div class="tdc">
+    ${saisonDeco}
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:3px">SANDERS EURALIS · VIC-EN-BIGORRE</div>
+        <div style="font-size:14px;font-weight:600;color:rgba(255,255,255,.8)">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="tdc-clock" id="tdc-clock">${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:3px">
+          <span class="pulse-live"></span>
+          <span style="font-size:10px;color:rgba(255,255,255,.35)">Mise à jour en direct</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerte non arrivés -->
+    ${nonArrives.length>0?`
+    <div style="background:rgba(248,113,113,.1);border:2px solid rgba(248,113,113,.4);border-radius:10px;padding:10px 14px;margin-bottom:12px" class="alert-blink">
+      <div style="display:flex;align-items:center;gap:8px;color:#f87171;font-weight:700;font-size:13px">
+        <span style="font-size:16px">🚨</span>
+        ${nonArrives.length} camion(s) NON ARRIVÉ(S)
+      </div>
+      <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">
+        ${nonArrives.map(r=>`<div style="font-size:11px;color:rgba(248,113,113,.8)">${r.creneau} — ${r.matiere_nom} · ${r.transporteur} · ${r.chauffeur} · ${r.tonnage}T</div>`).join('')}
+      </div>
+      <button onclick="switchView('dash')" style="margin-top:8px;background:rgba(248,113,113,.2);border:1px solid rgba(248,113,113,.4);color:#f87171;padding:5px 12px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer">🔄 Gérer les reports →</button>
+    </div>`:''}
+
+    <!-- Tous arrivés ! -->
+    ${tousArrivés?`<div class="tousarr"><div style="font-size:22px;margin-bottom:4px">🎉</div><div style="font-weight:700;color:#22c55e;font-size:15px">Tous les camions sont arrivés !</div><div style="font-size:12px;color:rgba(34,197,94,.7);margin-top:2px">${total} livraisons · ${tonnage}T</div></div>`:''}
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px">
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:${th.accent}">${total}</div><div class="tdc-kpi-l">Camions</div></div>
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:#22c55e">${livres}</div><div class="tdc-kpi-l">Livrés</div></div>
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:#f59e0b">${rdvsAuj.filter(r=>r.statut==='confirme'&&r.date===todayStr).length}</div><div class="tdc-kpi-l">Attendus</div></div>
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:#f87171">${nonArrives.length}</div><div class="tdc-kpi-l">Non arrivés</div></div>
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:${pColor(ponct)}">${ponct}%</div><div class="tdc-kpi-l">Ponctualité</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:#a78bfa">${tonnage}T</div><div class="tdc-kpi-l">Tonnage livré</div></div>
+      <div class="tdc-kpi"><div class="tdc-kpi-v" style="color:${th.accent2}">${rdvsAuj.filter(r=>r.statut==='annule').length}</div><div class="tdc-kpi-l">Annulés</div></div>
+    </div>
+
+    <!-- Planning par créneau -->
+    <div class="tdc-panel">
+      <div class="tdc-panel-h"><div class="tdc-panel-title">Planning du jour</div><span class="pulse-live"></span></div>
+      ${CRENEAUX.map(cr=>{
+        const rdvsCr=byCreneau[cr]||[];
+        const blk=isBlocked(todayStr,cr);
+        const minR=minutesRestantes(todayStr,cr);
+        const pct=Math.round((CRENEAU_DUREE_MIN-minR)/CRENEAU_DUREE_MIN*100);
+        const barColor=pct>=90?'#f87171':pct>=60?'#f59e0b':'#22c55e';
+        return`
+        <div class="tdc-cren-h">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);min-width:110px">${cr}</span>
+          <div class="tdc-bar-bg"><div class="tdc-bar" style="width:${pct}%;background:${barColor}"></div></div>
+          <span style="font-size:10px;color:rgba(255,255,255,.35);margin-left:8px;white-space:nowrap">${blk?'🔒 Fermé':minR+'min restantes'}</span>
+        </div>
+        ${rdvsCr.length===0?`<div style="padding:7px 14px;font-size:11px;color:rgba(255,255,255,.2);font-style:italic">${blk?'Créneau bloqué':'Aucune livraison'}</div>`:''}
+        ${rdvsCr.map(r=>{
+          const m=matById(r.matiere_id);
+          const bdg=r.statut==='confirme'?'bdg-ok':r.statut==='non_arrive'?'bdg-na':r.statut==='annule'?'bdg-ann':'bdg-att';
+          const stLbl=r.statut==='confirme'?'Livré':r.statut==='non_arrive'?'Non arrivé':r.statut==='annule'?'Annulé':'En attente';
+          return`<div class="tdc-row" onclick="openDetail(${r.id})" style="cursor:pointer">
+            <div style="font-size:11px;color:rgba(255,255,255,.5)">${r.creneau}</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.85);display:flex;align-items:center;gap:5px">
+                <span style="width:8px;height:8px;border-radius:50%;background:${m?.couleur||'#888'};flex-shrink:0;display:inline-block"></span>
+                ${r.matiere_nom}
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px">${r.transporteur} · ${r.chauffeur} · ${r.tonnage}T</div>
+            </div>
+            <span class="tdc-badge ${bdg}">${stLbl}</span>
+          </div>`;
+        }).join('')}`;
+      }).join('')}
+    </div>
+
+    <!-- Ticker -->
+    <div class="ticker-wrap">
+      <div class="ticker-inner">
+        ${total} camions aujourd'hui &nbsp;|&nbsp;
+        ${livres} livrés · ${nonArrives.length} non arrivés &nbsp;|&nbsp;
+        ${tonnage}T livrés &nbsp;|&nbsp;
+        Ponctualité du jour : ${ponct}% &nbsp;|&nbsp;
+        ${nonArrives.length>0?nonArrives.map(r=>`⚠️ Non arrivé : ${r.transporteur} — ${r.matiere_nom}`).join(' | '):'✅ Aucun non-arrivé pour l\'instant'} &nbsp;|&nbsp;
+        Prochains créneaux disponibles : ${CRENEAUX.filter(c=>minutesRestantes(todayStr,c)>=20).join(' · ')||'Journée complète'}
+      </div>
+    </div>
+  </div>`;
+
+  // Horloge en temps réel dans le tour
+  if(!document.getElementById('tdc-clock-interval')){
+    const iv=setInterval(()=>{
+      const el=document.getElementById('tdc-clock');
+      if(!el){clearInterval(iv);return;}
+      el.textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    },1000);
+  }
+}
+
+// ══ CONFETTIS ══
+function launchConfetti(){
+  const canvas=document.createElement('canvas');
+  canvas.id='confetti-canvas';
+  canvas.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998';
+  document.body.appendChild(canvas);
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const colors=['#C8102E','#2E7D32','#EAB308','#3B82F6','#F97316','#8B5CF6','#EC4899'];
+  const particles=[...Array(120)].map(()=>({
+    x:Math.random()*canvas.width,y:-20,
+    vx:(Math.random()-0.5)*4,vy:Math.random()*4+2,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    size:Math.random()*8+4,
+    rotation:Math.random()*360,
+    rotSpeed:(Math.random()-0.5)*6
+  }));
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.rotation+=p.rotSpeed;p.vy+=0.05;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rotation*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2);
+      ctx.restore();
+    });
+    frame++;
+    if(frame<200)requestAnimationFrame(draw);
+    else{canvas.remove();}
+  }
+  draw();
+  showToast('🎉 Tous les camions sont arrivés !');
+}
+
+// ══ DURÉES DÉCHARGEMENT (Admin) ══
+function renderDurees(){
+  return`
+  <div class="pg-h"><div><h2>⏱ Durées de déchargement</h2><p>Définissez le temps moyen par matière — le nombre de camions par créneau est calculé automatiquement (créneau = 2h)</p></div></div>
+  <div class="card">
+    <div class="card-h"><h3>Durée par créneau : <strong>120 min</strong></h3>
+      <span style="font-size:12px;color:var(--soft)">Max/créneau = 120 ÷ durée matière</span>
+    </div>
+    <div style="display:flex;flex-direction:column">
+      ${MATIERES.filter(m=>m.actif).map(m=>{
+        const max=Math.floor(120/(m.duree_min||20));
+        return`<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--border-s)">
+          <div style="width:12px;height:12px;border-radius:50%;background:${m.couleur};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13.5px;font-weight:600">${m.nom} <span style="font-family:monospace;font-size:11px;color:var(--soft)">${m.code}</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" value="${m.duree_min||20}" min="10" max="120" step="5"
+                style="width:70px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center"
+                onchange="saveDuree('${m.id}',this.value,this)"
+                id="dur-${m.id}">
+              <span style="font-size:12px;color:var(--soft)">min</span>
+            </div>
+            <div style="background:${max>=6?'var(--vert-l)':max>=4?'var(--orange-l)':'var(--rouge-l)'};color:${max>=6?'var(--vert)':max>=4?'var(--orange)':'var(--rouge)'};padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;min-width:90px;text-align:center" id="max-${m.id}">
+              Max ${max} camions
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="padding:12px 16px;background:var(--vert-l);border-top:1px solid var(--border);font-size:12.5px;color:var(--vert)">
+      💡 Les modifications sont appliquées immédiatement. Le formulaire RDV adapte automatiquement les places disponibles.
+    </div>
+  </div>`;
+}
+
+async function saveDuree(matId, val, input){
+  const duree=Math.max(10,Math.min(120,parseInt(val)||20));
+  input.value=duree;
+  await sb.from('matieres').update({duree_min:duree}).eq('id',matId);
+  const{data}=await sb.from('matieres').select('*').order('categorie').order('nom');
+  MATIERES=data||[];
+  // Mettre à jour le badge max
+  const maxEl=document.getElementById('max-'+matId);
+  if(maxEl){
+    const max=Math.floor(120/duree);
+    maxEl.textContent='Max '+max+' camions';
+    maxEl.style.background=max>=6?'var(--vert-l)':max>=4?'var(--orange-l)':'var(--rouge-l)';
+    maxEl.style.color=max>=6?'var(--vert)':max>=4?'var(--orange)':'var(--rouge)';
+  }
+  showToast('Durée mise à jour — max '+Math.floor(120/duree)+' camions/créneau');
 }
 
 // ══ PARAMÈTRES ══
