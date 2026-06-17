@@ -26,8 +26,8 @@ const MAT_COLORS=['#D97706','#B45309','#EAB308','#84CC16','#22C55E','#F97316','#
 
 const TABS={
   admin:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'durees',lbl:'⏱ Durées'},{id:'settings',lbl:'⚙️ Paramètres'}],
-  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'}],
-  employe:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'}],
+  responsable:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'rapports',lbl:'📈 Rapports'},{id:'slots',lbl:'⏱ Créneaux'},{id:'matieres',lbl:'🌾 Matières'},{id:'users',lbl:'👥 Utilisateurs'},{id:'durees',lbl:'⏱ Durées'}],
+  employe:[{id:'dash',lbl:'📊 Bord'},{id:'rdv',lbl:'📅 RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'hist',lbl:'📁 Historique'},{id:'durees',lbl:'⏱ Durées'}],
   transporteur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'cal',lbl:'🗓 Calendrier'},{id:'new',lbl:'➕ Nouveau'},{id:'drivers',lbl:'👷 Chauffeurs'},{id:'hist',lbl:'📁 Historique'}],
   chauffeur:[{id:'rdv',lbl:'📅 Mes RDV'},{id:'new',lbl:'➕ Nouveau'},{id:'hist',lbl:'📁 Historique'}],
 };
@@ -1755,40 +1755,42 @@ function launchConfetti(){
 
 // ══ DURÉES DÉCHARGEMENT (Admin) ══
 function renderDurees(){
-  return`
-  <div class="pg-h"><div><h2>⏱ Durées de déchargement</h2><p>Définissez le temps moyen par matière — le nombre de camions par créneau est calculé automatiquement (créneau = 2h)</p></div></div>
-  <div class="card">
-    <div class="card-h"><h3>Durée par créneau : <strong>120 min</strong></h3>
-      <span style="font-size:12px;color:var(--soft)">Max/créneau = 120 ÷ durée matière</span>
-    </div>
-    <div style="display:flex;flex-direction:column">
-      ${MATIERES.filter(m=>m.actif).map(m=>{
-        const max=Math.floor(120/(m.duree_min||20));
-        return`<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--border-s)">
-          <div style="width:12px;height:12px;border-radius:50%;background:${m.couleur};flex-shrink:0"></div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13.5px;font-weight:600">${m.nom} <span style="font-family:monospace;font-size:11px;color:var(--soft)">${m.code}</span></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <input type="number" value="${m.duree_min||20}" min="10" max="120" step="5"
-                style="width:70px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;text-align:center"
-                onchange="saveDuree('${m.id}',this.value,this)"
-                id="dur-${m.id}">
-              <span style="font-size:12px;color:var(--soft)">min</span>
-            </div>
-            <div style="background:${max>=6?'var(--vert-l)':max>=4?'var(--orange-l)':'var(--rouge-l)'};color:${max>=6?'var(--vert)':max>=4?'var(--orange)':'var(--rouge)'};padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;min-width:90px;text-align:center" id="max-${m.id}">
-              Max ${max} camions
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="padding:12px 16px;background:var(--vert-l);border-top:1px solid var(--border);font-size:12.5px;color:var(--vert)">
-      💡 Les modifications sont appliquées immédiatement. Le formulaire RDV adapte automatiquement les places disponibles.
-    </div>
-  </div>`;
+  const canEdit=['admin','responsable','employe'].includes(cuP?.role);
+  const rows=MATIERES.filter(m=>m.actif).map(m=>{
+    const max=Math.floor(120/(m.duree_min||20));
+    const maxColor=max>=6?'var(--vert)':max>=4?'var(--orange)':'var(--rouge)';
+    const maxBg=max>=6?'var(--vert-l)':max>=4?'var(--orange-l)':'var(--rouge-l)';
+    let inputHtml;
+    if(canEdit){
+      inputHtml='<input type="number" value="'+(m.duree_min||20)+'" min="10" max="120" step="5" '
+        +'style="width:70px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:DM Sans,sans-serif;font-size:13px;text-align:center;background:var(--white)" '
+        +'onchange="saveDuree(&quot;'+m.id+'&quot;,this.value,this)" id="dur-'+m.id+'">';
+    } else {
+      inputHtml='<span style="width:70px;display:inline-block;text-align:center;font-size:14px;font-weight:600">'+(m.duree_min||20)+'</span>';
+    }
+    return '<div style="display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border-s)">'
+      +'<div style="width:12px;height:12px;border-radius:50%;background:'+m.couleur+';flex-shrink:0"></div>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600">'+m.nom+' <span style="font-family:monospace;font-size:11px;color:var(--soft)">'+m.code+'</span></div></div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<div style="display:flex;align-items:center;gap:6px">'+inputHtml+'<span style="font-size:12px;color:var(--soft)">min</span></div>'
+      +'<div style="background:'+maxBg+';color:'+maxColor+';padding:4px 12px;border-radius:8px;font-size:12px;font-weight:700;white-space:nowrap;min-width:100px;text-align:center" id="max-'+m.id+'">Max '+max+' camions</div>'
+      +'</div></div>';
+  }).join('');
+  const infoBanner=canEdit
+    ?'<div style="padding:10px 16px;background:var(--vert-l);border-bottom:1px solid var(--border);font-size:12.5px;color:var(--vert)">✏️ Modifiez les durées — applicables immédiatement.</div>'
+    :'<div style="padding:10px 16px;background:var(--beige);border-bottom:1px solid var(--border);font-size:12.5px;color:var(--soft)">👁 Consultation uniquement.</div>';
+  return '<div class="pg-h"><div><h2>⏱ Durées de déchargement</h2>'
+    +'<p>Durée moyenne par matière — nombre max de camions par créneau de 2h calculé automatiquement</p></div></div>'
+    +'<div class="card">'
+    +'<div class="card-h"><h3>Durée créneau : <strong>120 min</strong></h3>'
+    +'<span style="font-size:12px;color:var(--soft)">Max camions = 120 ÷ durée</span></div>'
+    +infoBanner
+    +'<div style="display:flex;flex-direction:column">'+rows+'</div>'
+    +'<div style="padding:12px 16px;background:var(--vert-l);border-top:1px solid var(--border);font-size:12.5px;color:var(--vert)">'
+    +'💡 Formule : 120 min ÷ durée déchargement = nombre max de camions par créneau</div>'
+    +'</div>';
 }
+
 
 async function saveDuree(matId, val, input){
   const duree=Math.max(10,Math.min(120,parseInt(val)||20));
