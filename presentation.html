@@ -1325,216 +1325,159 @@ footer {
 <!-- ARCHITECTURE TECHNIQUE -->
 <section id="technique" class="section-dark">
   <div class="section-inner">
-    <div class="eyebrow white">Architecture</div>
-    <h2 style="color:#fff">Comment fonctionne le site techniquement ?</h2>
+    <div class="eyebrow white">Fonctionnement</div>
+    <h2 style="color:#fff">Comment fonctionne le site ? <span style="font-size:22px">🧩</span></h2>
     <div class="divider"></div>
-    <p class="lead white">Une architecture moderne, simple et sans serveur à maintenir.</p>
-    <div class="tech-grid">
-      <div class="tech-card">
-        <div class="tech-card-title">Frontend</div>
-        <div class="tech-card-name">HTML · CSS · JavaScript</div>
-        <div class="tech-card-desc">Le site est une application web monopage (SPA). Tout le code tient en 3 fichiers : index.html, style.css, app.js. Aucun framework, aucune dépendance complexe. Chargement ultra-rapide.</div>
-        <span class="tech-badge">3 fichiers · ~3000 lignes</span>
+    <p class="lead white">Pas besoin d'être informaticien pour comprendre. Voici l'essentiel, expliqué simplement.</p>
+
+    <!-- 3 blocs principaux -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px">
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;text-align:center">
+        <div style="font-size:44px;margin-bottom:12px">🌐</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:10px">Le site web</div>
+        <div style="font-size:13px;opacity:.6;line-height:1.7">C'est une page web comme n'importe quel autre site. Vous l'ouvrez dans Chrome ou Safari, vous vous connectez, et ça fonctionne. Pas d'installation, pas de logiciel. Ça marche sur PC, tablette et téléphone.</div>
       </div>
-      <div class="tech-card">
-        <div class="tech-card-title">Base de données & Auth</div>
-        <div class="tech-card-name">MySQL OVH</div>
-        <div class="tech-card-desc">Base de données MySQL hébergée directement sur OVH. Même hébergeur que le site — tout au même endroit, facturation unique, support francophone. L'API PHP fait le lien entre le site et la base de données.</div>
-        <span class="tech-badge">MySQL · API PHP · HTTPS</span>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;text-align:center">
+        <div style="font-size:44px;margin-bottom:12px">🗄️</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:10px">La base de données</div>
+        <div style="font-size:13px;opacity:.6;line-height:1.7">Tous les RDV, matières et utilisateurs sont stockés sur un serveur OVH en France. C'est comme un grand tableau Excel sécurisé, accessible par plusieurs personnes en même temps, sauvegardé chaque nuit automatiquement.</div>
       </div>
-      <div class="tech-card">
-        <div class="tech-card-title">Hébergement</div>
-        <div class="tech-card-name">Hébergement OVH</div>
-        <div class="tech-card-desc">Les fichiers statiques sont hébergés sur Hébergement OVH — gratuit, fiable, HTTPS automatique. Pour un déploiement professionnel, migration possible vers OVH, Infomaniak ou tout hébergeur web standard en 10 minutes.</div>
-        <span class="tech-badge">HTTPS · Domaine pro · Support FR</span>
-      </div>
-      <div class="tech-card">
-        <div class="tech-card-title">Sécurité</div>
-        <div class="tech-card-name">Authentification JWT + RLS</div>
-        <div class="tech-card-desc">Chaque utilisateur s'authentifie avec email + mot de passe via une API PHP sécurisée. Les sessions sont gérées côté serveur. Les droits d'accès sont vérifiés à chaque requête : chaque rôle ne voit que ses données autorisées, même en accès direct à l'API.</div>
-        <span class="tech-badge">Sessions PHP · Droits par rôle · HTTPS</span>
-      </div>
-      <div class="tech-card">
-        <div class="tech-card-title">PWA</div>
-        <div class="tech-card-name">Progressive Web App</div>
-        <div class="tech-card-desc">Le site peut être installé comme une application native sur iPhone et Android. Un Service Worker gère le cache pour une utilisation en conditions de réseau dégradé. Accessible depuis l'écran d'accueil.</div>
-        <span class="tech-badge">iOS · Android · Service Worker</span>
-      </div>
-      <div class="tech-card" style="border:1px solid rgba(46,125,50,.4);background:rgba(46,125,50,.08)">
-        <div class="tech-card-title">Temps réel</div>
-        <div class="tech-card-name">Server-Sent Events (SSE)</div>
-        <div class="tech-card-desc">
-          Le serveur PHP envoie les mises à jour <strong style="opacity:.9">automatiquement</strong> au navigateur dès qu'un changement survient en base MySQL — sans que le navigateur ait à demander.<br><br>
-          Un employé marque un camion non arrivé → <strong style="opacity:.9">tous les écrans connectés se mettent à jour en 2 secondes</strong>, sans recharger la page.<br><br>
-          Contrairement au polling classique (le navigateur interroge le serveur toutes les X secondes), le SSE inverse le sens : c'est le <strong style="opacity:.9">serveur qui pousse</strong> l'information. Plus réactif, moins de charge serveur.
-        </div>
-        <span class="tech-badge" style="background:rgba(46,125,50,.2);color:#22c55e">Vrai temps réel · PHP natif · OVH compatible</span>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:24px;text-align:center">
+        <div style="font-size:44px;margin-bottom:12px">🔌</div>
+        <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:10px">Le lien entre les deux</div>
+        <div style="font-size:13px;opacity:.6;line-height:1.7">Quand vous cliquez sur "Confirmer un RDV", le site demande au serveur de sauvegarder l'info, et le serveur répond en moins d'une seconde. C'est invisible pour vous — comme envoyer un message WhatsApp.</div>
       </div>
     </div>
 
-    <!-- SSE Explication -->
+    <!-- Analogie -->
+    <div style="margin-top:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:22px;display:flex;gap:16px;align-items:flex-start">
+      <span style="font-size:28px;flex-shrink:0">💡</span>
+      <div>
+        <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:6px">L'analogie parfaite</div>
+        <div style="font-size:13.5px;opacity:.65;line-height:1.8">C'est exactement comme votre application bancaire. Vous ouvrez une page web, vous vous connectez avec vos identifiants, vos informations s'affichent en temps réel, et tout ce que vous faites est sauvegardé immédiatement sur le serveur. Ici c'est pareil — sauf que le "serveur de la banque" c'est OVH, et les "informations" ce sont vos rendez-vous de livraison.</div>
+      </div>
+    </div>
+
+    <!-- 4 caractéristiques clés -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px">
+      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:24px;flex-shrink:0">🔒</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:5px">Sécurisé par identifiants</div>
+          <div style="font-size:12.5px;opacity:.55;line-height:1.65">Chaque utilisateur a son propre login. Un transporteur ne peut pas voir les RDV des autres. Un employé ne peut pas toucher aux paramètres. Chaque rôle accède uniquement à ce qui le concerne.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:24px;flex-shrink:0">📱</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:5px">Sur tous les appareils</div>
+          <div style="font-size:12.5px;opacity:.55;line-height:1.65">PC au bureau, tablette en salle de réception, téléphone pour le chauffeur depuis sa cabine. Même URL, tout s'adapte à l'écran. Peut s'installer comme une vraie application sur téléphone en 10 secondes.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:24px;flex-shrink:0">⚡</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:5px">Mis à jour en temps réel</div>
+          <div style="font-size:12.5px;opacity:.55;line-height:1.65">Si Thomas marque un camion non arrivé depuis son téléphone, Marie voit l'alerte sur son écran en moins de 2 secondes — sans rien faire. Tout le monde travaille sur les mêmes données au même instant.</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:18px;display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:24px;flex-shrink:0">💾</span>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:5px">Sauvegardé automatiquement</div>
+          <div style="font-size:12.5px;opacity:.55;line-height:1.65">Chaque action est enregistrée instantanément. Pas de bouton "Enregistrer" à oublier. OVH fait une sauvegarde complète chaque nuit. En cas de problème, restauration des données en 2 minutes.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL -->
+    <div style="margin-top:16px;background:rgba(46,125,50,.1);border:1px solid rgba(46,125,50,.3);border-radius:12px;padding:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span style="font-size:28px">🌍</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.4;margin-bottom:4px">Adresse du site</div>
+        <div style="font-family:'DM Mono',monospace;font-size:18px;color:#22c55e;font-weight:600">https://reception-sanders.fr</div>
+      </div>
+      <div style="margin-left:auto;font-size:12px;opacity:.45;line-height:1.6">Accessible depuis n'importe quel navigateur,<br>partout dans le monde, 24h/24.</div>
+    </div>
+
+    <!-- Section SSE -->
     <div style="margin-top:28px;background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.3);border-radius:14px;padding:28px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
         <span style="font-size:22px">⚡</span>
         <div>
-          <div style="font-size:15px;font-weight:600;color:#fff">Comment fonctionne le temps réel — Server-Sent Events</div>
-          <div style="font-size:12px;opacity:.45;margin-top:2px">Technologie retenue pour l'hébergement OVH + MySQL</div>
+          <div style="font-size:15px;font-weight:600;color:#fff">Le temps réel — comment ça marche concrètement ?</div>
+          <div style="font-size:12px;opacity:.4;margin-top:2px">Technologie retenue : Server-Sent Events (SSE) — hébergement OVH + MySQL</div>
         </div>
       </div>
 
-      <!-- Schéma SSE -->
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-bottom:24px">
-        <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:16px;text-align:center">
-          <div style="font-size:24px;margin-bottom:8px">🖥️</div>
-          <div style="font-size:13px;font-weight:600;color:#fff;margin-bottom:6px">Navigateur</div>
-          <div style="font-size:11px;opacity:.5;line-height:1.5">Ouvre une connexion persistante vers le serveur une seule fois.<br>Reste en écoute en permanence.</div>
-          <div style="margin-top:10px;background:rgba(255,255,255,.05);border-radius:6px;padding:8px;font-family:'DM Mono',monospace;font-size:10px;opacity:.6;text-align:left">
-            new EventSource('/api/stream.php')
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-          <div style="color:rgba(46,125,50,.8);font-size:11px;font-weight:600;text-align:center">PUSH automatique<br>dès un changement</div>
-          <div style="font-size:28px;color:#22c55e">⟵</div>
-          <div style="font-size:10px;opacity:.4;text-align:center">Connexion<br>HTTPS persistante</div>
-        </div>
-        <div style="background:rgba(46,125,50,.1);border:1px solid rgba(46,125,50,.3);border-radius:10px;padding:16px;text-align:center">
-          <div style="font-size:24px;margin-bottom:8px">🖥️</div>
-          <div style="font-size:13px;font-weight:600;color:#22c55e;margin-bottom:6px">Serveur PHP — OVH</div>
-          <div style="font-size:11px;opacity:.5;line-height:1.5">Surveille la base MySQL.<br>Dès qu'un RDV change,<br>envoie la mise à jour à tous les navigateurs connectés.</div>
-          <div style="margin-top:10px;background:rgba(255,255,255,.05);border-radius:6px;padding:8px;font-family:'DM Mono',monospace;font-size:10px;opacity:.6;text-align:left">
-            echo "data: " . $json . "
-
-";
-          </div>
-        </div>
-      </div>
-
-      <!-- Comparaison Polling vs SSE -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
         <div style="background:rgba(200,16,46,.08);border:1px solid rgba(200,16,46,.2);border-radius:10px;padding:16px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#f87171;opacity:.8;margin-bottom:10px">❌ Polling (ancienne méthode)</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Le navigateur demande au serveur toutes les 30 secondes : "Y a-t-il du nouveau ?"</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Le serveur répond même si rien n'a changé — inutile</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Délai de 0 à 30 secondes avant de voir un changement</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Charge serveur constante, même sans activité</div>
-          </div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#f87171;margin-bottom:10px">❌ Ancienne méthode (polling)</div>
+          <div style="font-size:13px;opacity:.6;line-height:1.7">Le navigateur demande au serveur toutes les 30 secondes : <em>"Y a-t-il du nouveau ?"</em> — même si rien n'a changé. C'est comme appeler quelqu'un toutes les 30 secondes pour demander s'il a du nouveau. Inutile et énergivore.</div>
+          <div style="margin-top:10px;font-size:12px;opacity:.45">Délai : jusqu'à 30 secondes · Requêtes inutiles constantes</div>
         </div>
         <div style="background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.25);border-radius:10px;padding:16px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#22c55e;opacity:.8;margin-bottom:10px">✅ Server-Sent Events (SSE)</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Le serveur envoie uniquement quand il y a un vrai changement</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Le navigateur reste en écoute passive — zéro requête inutile</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span><strong style="opacity:.9">Mise à jour en moins de 2 secondes</strong> sur tous les écrans</div>
-            <div style="display:flex;gap:8px;font-size:12px;opacity:.6"><span style="flex-shrink:0">→</span>Compatible HTTPS, PHP natif, OVH mutualisé standard</div>
-          </div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#22c55e;margin-bottom:10px">✅ Nouvelle méthode (SSE)</div>
+          <div style="font-size:13px;opacity:.6;line-height:1.7">Le serveur prévient le navigateur <em>dès qu'il y a du nouveau</em>, automatiquement. C'est comme recevoir une notification WhatsApp — vous n'avez rien à faire, le message arrive tout seul.</div>
+          <div style="margin-top:10px;font-size:12px;color:rgba(34,197,94,.6)">Délai : moins de 2 secondes · Zéro requête inutile</div>
         </div>
       </div>
 
-      <!-- Exemple concret -->
       <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:16px">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.4;margin-bottom:12px">Exemple concret — Ce qui se passe en temps réel</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.4;margin-bottom:12px">Exemple concret</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;align-items:flex-start;gap:12px;padding:10px;background:rgba(255,255,255,.04);border-radius:8px">
-            <span style="background:rgba(200,16,46,.2);color:#f87171;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;margin-top:1px">10:14:32</span>
-            <span style="font-size:13px;opacity:.7">L'employé Thomas marque le camion <strong style="opacity:.9">Trans Gascogne — Soja Conv. 27T</strong> comme non arrivé depuis son téléphone</span>
+            <span style="background:rgba(200,16,46,.2);color:#f87171;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:1px">10:14:32</span>
+            <span style="font-size:13px;opacity:.7">Thomas marque le camion <strong style="opacity:.9">Trans Gascogne — Soja Conv. 27T</strong> comme non arrivé depuis son téléphone</span>
           </div>
-          <div style="display:flex;justify-content:center;color:rgba(255,255,255,.2);font-size:16px">↓ moins de 2 secondes</div>
+          <div style="text-align:center;color:rgba(255,255,255,.2);font-size:14px">↓ moins de 2 secondes</div>
           <div style="display:flex;align-items:flex-start;gap:12px;padding:10px;background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.2);border-radius:8px">
-            <span style="background:rgba(46,125,50,.3);color:#22c55e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;margin-top:1px">10:14:34</span>
-            <span style="font-size:13px;opacity:.7">Le tableau de bord de la responsable Marie se met à jour automatiquement : <strong style="opacity:.9">alerte rouge "1 non-arrivé"</strong>, compteur mis à jour, sans recharger la page</span>
+            <span style="background:rgba(46,125,50,.3);color:#22c55e;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;white-space:nowrap;flex-shrink:0;margin-top:1px">10:14:34</span>
+            <span style="font-size:13px;opacity:.7">Le tableau de bord de Marie se met à jour : <strong style="opacity:.9">alerte rouge "1 non-arrivé"</strong>, compteur mis à jour. Sans recharger la page.</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Hébergement dédié -->
+    <!-- Budget OVH -->
     <div style="margin-top:28px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px">
-      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.5;margin-bottom:20px">🚀 Architecture cible — Hébergement professionnel dédié</div>
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.4;margin-bottom:20px">🚀 Hébergement — OVH · reception-sanders.fr</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
         <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:18px">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.45;margin-bottom:10px">Fichiers du site</div>
-          <div style="font-size:16px;font-weight:600;margin-bottom:8px">OVH</div>
-          <div style="font-size:13px;opacity:.6;line-height:1.6">Les 3 fichiers (index.html, style.css, app.js) sont déposés en FTP sur un hébergement mutualisé standard. Le domaine <strong style="opacity:.9">reception-sanders.fr</strong> pointe dessus avec un certificat SSL automatique.</div>
+          <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Fichiers du site</div>
+          <div style="font-size:15px;font-weight:600;color:#fff;margin-bottom:8px">OVH Hébergement Pro</div>
+          <div style="font-size:13px;opacity:.6;line-height:1.6">Les fichiers du site sont déposés sur OVH. Le domaine <strong style="opacity:.9">reception-sanders.fr</strong> pointe dessus avec HTTPS automatique.</div>
           <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-            <span style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-size:11px;opacity:.7">3–8€/mois</span>
+            <span style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-size:11px;opacity:.7">5–7€/mois</span>
             <span style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-size:11px;opacity:.7">HTTPS automatique</span>
-            <span style="background:rgba(255,255,255,.1);padding:3px 10px;border-radius:6px;font-size:11px;opacity:.7">Domaine pro</span>
           </div>
         </div>
         <div style="background:rgba(46,125,50,.1);border:1px solid rgba(46,125,50,.3);border-radius:10px;padding:18px">
-          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.45;margin-bottom:10px">Base de données</div>
-          <div style="font-size:16px;font-weight:600;margin-bottom:8px">MySQL OVH</div>
-          <div style="font-size:13px;opacity:.6;line-height:1.6">Base de données MySQL hébergée sur OVH, même serveur que le site. Tout est centralisé chez un seul prestataire francophone. Sauvegarde automatique quotidienne incluse dans l'offre OVH.</div>
+          <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Base de données</div>
+          <div style="font-size:15px;font-weight:600;color:#22c55e;margin-bottom:8px">MySQL OVH</div>
+          <div style="font-size:13px;opacity:.6;line-height:1.6">Même hébergeur, même serveur, même facture. Sauvegardes automatiques quotidiennes incluses. Données hébergées en France.</div>
           <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-            <span style="background:rgba(46,125,50,.2);padding:3px 10px;border-radius:6px;font-size:11px;color:#22c55e">Tout chez OVH</span>
-            <span style="background:rgba(46,125,50,.2);padding:3px 10px;border-radius:6px;font-size:11px;color:#22c55e">MySQL inclus</span>
+            <span style="background:rgba(46,125,50,.2);padding:3px 10px;border-radius:6px;font-size:11px;color:#22c55e">Inclus dans l'offre</span>
+            <span style="background:rgba(46,125,50,.2);padding:3px 10px;border-radius:6px;font-size:11px;color:#22c55e">Données en France</span>
           </div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px;background:rgba(255,255,255,.04);border-radius:8px">
-        <div style="text-align:center;padding:0 16px;border-right:1px solid rgba(255,255,255,.1)"><div style="font-size:11px;opacity:.4;margin-bottom:4px">NAVIGATEUR</div><div style="font-size:13px">Chrome / Safari</div></div>
-        <div style="color:rgba(255,255,255,.3);font-size:18px">→</div>
-        <div style="text-align:center;padding:0 16px;border-right:1px solid rgba(255,255,255,.1)"><div style="font-size:11px;opacity:.4;margin-bottom:4px">HÉBERGEUR</div><div style="font-size:13px">reception-sanders.fr<br><span style="font-size:11px;opacity:.5">OVH</span></div></div>
-        <div style="color:rgba(255,255,255,.3);font-size:18px">→</div>
-        <div style="text-align:center;padding:0 16px;border-right:1px solid rgba(255,255,255,.1)"><div style="font-size:11px;opacity:.4;margin-bottom:4px">API</div><div style="font-size:13px">API PHP OVH</div></div>
-        <div style="color:rgba(255,255,255,.3);font-size:18px">→</div>
-        <div style="text-align:center;padding:0 16px;background:rgba(46,125,50,.15);border-radius:8px"><div style="font-size:11px;opacity:.4;margin-bottom:4px">BASE DE DONNÉES</div><div style="font-size:13px;color:#22c55e">MySQL<br><span style="font-size:11px;opacity:.6">OVH — même serveur</span></div></div>
-      </div>
-      <div style="margin-top:14px;background:rgba(255,255,255,.04);border-radius:8px;padding:12px 16px;font-size:13px;opacity:.6;line-height:1.6">
-        <strong style="opacity:.9">Déploiement :</strong> Déposer les fichiers en FTP → configurer MySQL → pointer reception-sanders.fr vers OVH. HTTPS automatique via Let's Encrypt. Durée : <strong style="color:#22c55e;opacity:1">1 à 2 heures</strong>.
-      </div>
-
-      <!-- Budget OVH -->
-      <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.08);padding-top:20px">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.4;margin-bottom:14px">💰 Budget mensuel — OVH (tarifs 2026 vérifiés)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-          <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Hébergement Pro</div>
-            <div style="font-size:20px;font-weight:700;color:#22c55e">5–7€</div>
-            <div style="font-size:10px;opacity:.4;margin-top:4px">par mois</div>
-            <div style="font-size:10px;opacity:.4;margin-top:6px;line-height:1.4">250 Go · MySQL inclus<br>SSH/FTP · multi-sites</div>
-          </div>
-          <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Domaine .fr</div>
-            <div style="font-size:20px;font-weight:700;color:#22c55e">~1€</div>
-            <div style="font-size:10px;opacity:.4;margin-top:4px">par mois</div>
-            <div style="font-size:10px;opacity:.4;margin-top:6px;line-height:1.4">reception-sanders.fr<br>10–15€/an · offert 1ère année</div>
-          </div>
-          <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">SSL HTTPS</div>
-            <div style="font-size:20px;font-weight:700;color:#22c55e">0€</div>
-            <div style="font-size:10px;opacity:.4;margin-top:4px">gratuit</div>
-            <div style="font-size:10px;opacity:.4;margin-top:6px;line-height:1.4">Let's Encrypt<br>inclus automatiquement</div>
-          </div>
-          <div style="background:rgba(46,125,50,.15);border:1px solid rgba(46,125,50,.3);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:11px;opacity:.4;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Total/mois</div>
-            <div style="font-size:22px;font-weight:700;color:#22c55e">~6–8€</div>
-            <div style="font-size:10px;opacity:.4;margin-top:4px">tout compris</div>
-            <div style="font-size:10px;color:rgba(34,197,94,.6);margin-top:6px;line-height:1.4">Moins de 100€/an<br>hébergement pro complet</div>
-          </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:rgba(46,125,50,.08);border:1px solid rgba(46,125,50,.2);border-radius:10px">
+        <div>
+          <div style="font-size:13px;opacity:.5;margin-bottom:4px">Coût total mensuel — hébergement + domaine + SSL + MySQL + sauvegardes</div>
+          <div style="font-size:11px;opacity:.35">Domaine .fr : ~10–15€/an offert la 1ère année · SSL Let's Encrypt : gratuit · Sauvegardes : incluses</div>
         </div>
-        <div style="background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.5);line-height:1.6">
-          ⚠️ <strong style="opacity:.8">Attention renouvellement OVH</strong> — tarifs promotionnels la 1ère année, hausse confirmée mai 2026 (jusqu'à +100% au renouvellement). Alternative stable : <strong style="opacity:.9">o2switch à ~5€/mois fixe</strong>, hébergements illimités, support FR très réactif, sans mauvaise surprise.
+        <div style="text-align:right;flex-shrink:0;margin-left:20px">
+          <div style="font-size:26px;font-weight:700;color:#22c55e">~6–8€<span style="font-size:14px;opacity:.5">/mois</span></div>
+          <div style="font-size:11px;opacity:.4">moins de 100€/an</div>
         </div>
       </div>
-    </div>
-
-    <div style="margin-top:40px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:28px">
-      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.5;margin-bottom:16px">Flux de données</div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🌐</div>Navigateur<br><span style="opacity:.5;font-size:11px">Chrome/Safari/Firefox</span></div>
-        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
-        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">📁</div>Hébergement OVH<br><span style="opacity:.5;font-size:11px">HTML/CSS/JS statiques</span></div>
-        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
-        <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🔌</div>API PHP<br><span style="opacity:.5;font-size:11px">OVH — même serveur</span></div>
-        <div style="color:rgba(255,255,255,.4);font-size:20px">→</div>
-        <div style="background:rgba(46,125,50,.2);border:1px solid rgba(46,125,50,.4);border-radius:8px;padding:10px 16px;font-size:13px;text-align:center"><div style="font-size:18px;margin-bottom:4px">🗄️</div>MySQL OVH<br><span style="opacity:.5;font-size:11px">Base de données</span></div>
+      <div style="margin-top:12px;background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.2);border-radius:8px;padding:10px 14px;font-size:12px;opacity:.55;line-height:1.6">
+        ⚠️ Tarifs promotionnels la 1ère année chez OVH — vérifiez le prix de renouvellement. Alternative sans surprise : <strong style="opacity:.8">o2switch à ~5€/mois fixe</strong>, support FR réactif, hébergements illimités.
       </div>
     </div>
   </div>
 </section>
-
 <!-- COMPARATIF -->
 <section>
   <div class="section-inner">
@@ -1607,57 +1550,63 @@ footer {
 <section class="section-alt">
   <div class="section-inner">
     <div class="eyebrow">Questions fréquentes</div>
-    <h2>Questions des décideurs</h2>
+    <h2>Ce que vous allez demander</h2>
     <div class="divider"></div>
     <div class="faq-list">
+
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si internet tombe en panne sur le site ?</div>
-        <div class="faq-a">Le planning journalier imprimable permet à l'équipe de réception de travailler avec une feuille papier en cas de panne réseau. La PWA garde également en cache les dernières données chargées. En conditions normales, une connexion 4G/5G ou même 3G suffit pour utiliser le portail.</div>
+        <div class="faq-a">Pas de panique. D'abord, le planning journalier est imprimable en un clic — l'équipe peut travailler avec une feuille papier. Ensuite, les données déjà chargées dans le navigateur restent visibles même sans connexion. Enfin, OVH garantit une disponibilité de 99,9% — les pannes sont très rares et courtes. Une connexion 4G suffit en cas de problème sur le réseau local.</div>
       </div>
+
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Les données sont-elles sécurisées et confidentielles ?</div>
-        <div class="faq-a">Oui. Les données sont hébergées sur les serveurs OVH en France (datacenters Roubaix ou Strasbourg). Conformité RGPD facilitée car les données restent sur le territoire français. Les mots de passe sont hachés et jamais stockés en clair. Toutes les communications passent en HTTPS avec certificat SSL Let's Encrypt. Sauvegardes automatiques quotidiennes incluses dans l'offre OVH.</div>
+        <div class="faq-a">Oui, à plusieurs niveaux. Les données sont hébergées sur les serveurs OVH <strong>en France</strong> (Roubaix ou Strasbourg) — conformité RGPD garantie. Toutes les communications passent par HTTPS (cadenas vert dans le navigateur). Les mots de passe ne sont jamais stockés en clair. OVH fait une sauvegarde complète chaque nuit. Et chaque utilisateur ne voit que ce que son rôle l'autorise à voir.</div>
       </div>
+
       <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on connecter ce portail à notre ERP existant ?</div>
-        <div class="faq-a">Oui. L'API PHP sur OVH peut être enrichie avec des endpoints d'intégration. Il est possible de synchroniser les données avec un ERP (SAP, Sage, etc.) via des appels API planifiés ou des webhooks. La base MySQL OVH est aussi directement accessible pour des exports automatiques. Cette intégration nécessite un développement complémentaire selon le système cible.</div>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Les transporteurs vont-ils vraiment utiliser le portail ?</div>
+        <div class="faq-a">Oui, si c'est la seule façon de livrer. La règle est simple : <strong>pas de RDV dans le portail = pas de déchargement</strong>. La prise de RDV ne prend que 3 étapes (se connecter → choisir une date → choisir un créneau) et fonctionne sur n'importe quel téléphone. Même un chauffeur non-technicien y arrive en 2 minutes. Et si vraiment il n'y arrive pas, l'employé peut créer le RDV à sa place.</div>
       </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si un transporteur essaie de prendre un RDV sur une matière incompatible ?</div>
+        <div class="faq-a">C'est tout simplement impossible. Quand le transporteur choisit une matière, le portail vérifie automatiquement les créneaux compatibles et n'affiche que ceux où sa matière peut passer. Les créneaux incompatibles n'apparaissent pas du tout dans la liste. Le transporteur ne peut pas "forcer la main" — la vérification se fait aussi côté serveur, pas seulement dans le navigateur.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quel est le coût mensuel exact ?</div>
+        <div class="faq-a">Environ <strong>6 à 8€ par mois tout compris</strong> : hébergement OVH Pro (~5–7€/mois), nom de domaine reception-sanders.fr (~10–15€/an soit ~1€/mois), SSL HTTPS gratuit (Let's Encrypt), sauvegardes automatiques quotidiennes incluses, base MySQL incluse. Soit <strong>moins de 100€ par an</strong>. Attention aux prix de renouvellement OVH qui peuvent augmenter — alternative stable : o2switch à ~5€/mois fixe sans surprise.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on connecter ce portail à notre ERP ou logiciel existant ?</div>
+        <div class="faq-a">Oui. Le portail dispose d'une API PHP standard sur OVH. Il est possible de synchroniser les données avec un ERP (SAP, Sage…) via des appels automatiques planifiés. La base MySQL est aussi directement accessible pour des exports. Cela nécessite un développement complémentaire selon le système existant, mais c'est techniquement faisable.</div>
+      </div>
+
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Combien de transporteurs et d'utilisateurs peut-on gérer ?</div>
-        <div class="faq-a">L'hébergement OVH Pro gère sans problème ce volume : une dizaine d'utilisateurs simultanés maximum, quelques centaines de RDV par mois, 15 matières. La base MySQL OVH incluse dans l'offre Pro est largement suffisante. En cas de forte montée en charge (multi-sites), un VPS OVH à ~10-15€/mois prendrait le relais sans migration de données.</div>
+        <div class="faq-a">Autant que nécessaire. L'hébergement OVH Pro gère sans problème une dizaine d'utilisateurs simultanés et plusieurs centaines de RDV par mois. Il n'y a pas de limite technique au nombre de comptes transporteurs ou chauffeurs. En cas de très forte croissance, un VPS OVH à ~10–15€/mois prend le relais sans aucune migration de données.</div>
       </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si un transporteur prend un RDV pour une matière incompatible ?</div>
-        <div class="faq-a">Impossible. Dès que le transporteur sélectionne une matière, l'API PHP interroge la base MySQL et retourne uniquement les créneaux compatibles. Un créneau incompatible n'apparaît tout simplement pas dans la liste — le transporteur ne peut pas le sélectionner, même en essayant de contourner l'interface. La vérification se fait aussi côté serveur PHP, pas seulement dans le navigateur.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Comment migrer vers un hébergement professionnel plus tard ?</div>
-        <div class="faq-a">Migration triviale. Les 3 fichiers (index.html, style.css, app.js) se déposent sur n'importe quel hébergeur web en FTP. La base OVH MySQL reste la même — aucune migration de données nécessaire. Possibilité d'utiliser un nom de domaine personnalisé (ex: reception.sanders-euralis.fr) avec un certificat SSL gratuit Let's Encrypt.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Quel est le coût total de l'hébergement sur OVH ?</div>
-        <div class="faq-a">Environ <strong>6 à 8€ par mois tout compris</strong> : hébergement Pro OVH (~5-7€/mois), nom de domaine reception-sanders.fr (~10-15€/an soit ~1€/mois), SSL HTTPS gratuit (Let's Encrypt inclus), sauvegardes automatiques quotidiennes incluses, base de données MySQL incluse. Soit moins de <strong>100€ par an</strong> pour un site professionnel, sécurisé, avec domaine propre. Attention : OVH propose souvent des tarifs promotionnels la 1ère année — vérifiez le prix de renouvellement avant de souscrire.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Pourquoi OVH plutôt qu'un autre hébergeur ?</div>
-        <div class="faq-a">OVH est le leader européen de l'hébergement, avec des datacenters en France. Avantages : données hébergées en France, RGPD facilité, support francophone, tarifs compétitifs. Alternative intéressante : <strong>o2switch</strong> (~5€/mois fixe sans surprise au renouvellement, hébergements illimités, support FR très réactif). Les deux conviennent parfaitement pour ce projet.</div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on ajouter d'autres sites Sanders / Euralis ?</div>
-        <div class="faq-a">Oui, deux approches : (1) Multi-sites dans la même application — ajouter un champ "site" sur les RDV et filtrer selon l'utilisateur connecté. (2) Instances séparées — dupliquer le portail pour chaque site Sanders/Euralis, chacun avec sa propre base MySQL OVH. L'hébergement Pro OVH permettant plusieurs sites sur un même compte, le surcoût serait minimal (juste un domaine supplémentaire à ~10€/an).</div>
-      </div>
+
       <div class="faq-item">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Que se passe-t-il si OVH tombe en panne ?</div>
-        <div class="faq-a">OVH garantit un uptime de 99,9% sur ses offres mutualisées. En cas de panne exceptionnelle, le planning journalier imprimable permet à l'équipe de travailler avec une feuille papier. Les données sont sauvegardées automatiquement chaque jour — en cas d'incident grave, la restauration se fait en moins de 2 minutes depuis l'interface OVH. Le portail est aussi conçu pour fonctionner en dégradé : les dernières données chargées restent accessibles dans le navigateur.</div>
+        <div class="faq-a">OVH garantit un uptime de 99,9% — soit moins de 9 heures de panne par an, généralement de quelques minutes. En cas de panne exceptionnelle : le planning journalier imprimable prend le relais immédiatement, les données sont sauvegardées chaque nuit (restauration en 2 minutes), et les navigateurs gardent en mémoire les dernières données chargées. En pratique, vous ne le remarquerez probablement jamais.</div>
       </div>
+
       <div class="faq-item">
-        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Le temps réel fonctionnera-t-il sur OVH mutualisé ?</div>
-        <div class="faq-a">Oui. La technologie retenue — Server-Sent Events (SSE) — est compatible avec PHP et les hébergements mutualisés OVH standard. Le serveur PHP maintient une connexion persistante avec le navigateur et envoie les mises à jour dès qu'un changement survient en base MySQL. Résultat : une mise à jour affichée en moins de 2 secondes sur tous les écrans connectés, sans recharger la page. Cette technologie est nativement supportée par tous les navigateurs modernes (Chrome, Safari, Firefox, Edge).</div>
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Le temps réel fonctionne-t-il vraiment sur OVH mutualisé ?</div>
+        <div class="faq-a">Oui. La technologie Server-Sent Events (SSE) est nativement supportée par PHP et les hébergements OVH standard. Concrètement : si Thomas marque un camion non arrivé depuis son téléphone à 10h14, Marie voit l'alerte rouge s'afficher sur son écran à 10h14 — en moins de 2 secondes, sans recharger la page. Tous les navigateurs modernes (Chrome, Safari, Firefox, Edge) supportent cette technologie.</div>
       </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Peut-on déployer le portail sur d'autres sites Sanders / Euralis ?</div>
+        <div class="faq-a">Oui, de deux façons. Soit on ajoute un champ "site" dans la base de données pour gérer plusieurs sites depuis la même interface — chaque utilisateur ne voit que son site. Soit on duplique le portail pour chaque site, chacun avec son propre domaine et sa propre base MySQL. L'hébergement Pro OVH autorisant plusieurs sites sur un même compte, le surcoût serait minime (juste un domaine supplémentaire à ~10€/an).</div>
+      </div>
+
     </div>
   </div>
 </section>
-
 <!-- CTA FINAL -->
 <section class="section-vert">
   <div class="section-inner" style="text-align:center">
