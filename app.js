@@ -1391,9 +1391,98 @@ async function openDetail(id){
       </div>
       ${canC?`<div style="display:flex;gap:8px;margin-top:8px"><input type="text" id="nc-${id}" placeholder="Ajouter un commentaire…" class="f-input" style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter')addComment(${id})"><button class="btn-p sm" onclick="addComment(${id})">Envoyer</button></div>`:''}
     </div>`;
+  const canDel=['admin','responsable'].includes(cuP?.role);
   const ok=document.getElementById('m-ok');ok.textContent='Fermer';ok.className='m-ok';ok.onclick=closeModal;
+  ok.style.display='';
+  // Zone actions en bas de la modal
+  const footer=document.createElement('div');
+  footer.style.cssText='margin-top:16px;padding-top:14px;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap';
+  if(canDel){
+    const delZone=document.createElement('div');
+    delZone.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap';
+    delZone.innerHTML='<span style="font-size:12px;color:var(--muted)">Admin / Responsable uniquement</span>';
+    const delBtn=document.createElement('button');
+    delBtn.className='btn-p sm rouge';
+    delBtn.style.cssText='display:flex;align-items:center;gap:6px';
+    delBtn.innerHTML='🗑️ Supprimer ce RDV';
+    delBtn.onclick=()=>openDeleteRdv(id);
+    delZone.appendChild(delBtn);
+    footer.appendChild(delZone);
+  } else {
+    footer.appendChild(document.createElement('div'));
+  }
+  document.getElementById('m-content').appendChild(footer);
   document.getElementById('m-cancel').style.display='none';
   document.getElementById('modal').classList.add('show');
+}
+
+function openDeleteRdv(id){
+  const r=RDV.find(r=>r.id===id);if(!r)return;
+  document.getElementById('modal-box').className='modal-box';
+  document.getElementById('m-title').textContent='🗑️ Supprimer ce RDV ?';
+  document.getElementById('m-desc').textContent='';
+  document.getElementById('m-content').innerHTML=`
+    <div style="background:var(--rouge-l);border:1px solid var(--rouge-m);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px">
+      <div style="font-weight:700;color:var(--rouge);margin-bottom:4px">${r.date} — ${r.creneau}</div>
+      <div>${matDot(r.matiere_id)}${r.matiere_nom} · ${r.tonnage}T · ${r.transporteur} · ${r.chauffeur}</div>
+    </div>
+    <div class="fgrp">
+      <label>Raison de la suppression <span class="req">*</span></label>
+      <select id="del-reason-select" onchange="toggleDelReason()" style="margin-bottom:8px">
+        <option value="">— Sélectionner une raison —</option>
+        <option value="Annulation transporteur">Annulation du transporteur</option>
+        <option value="Erreur de saisie">Erreur de saisie</option>
+        <option value="Matière non disponible">Matière non disponible</option>
+        <option value="Problème technique">Problème technique</option>
+        <option value="Doublon">RDV en doublon</option>
+        <option value="Autre">Autre (préciser)</option>
+      </select>
+      <input type="text" id="del-reason-other" placeholder="Précisez la raison…" style="display:none">
+    </div>
+    <div style="background:var(--orange-l);border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#92400E">
+      ⚠️ Cette action est <strong>irréversible</strong>. Le RDV sera supprimé définitivement.
+    </div>`;
+
+  const ok=document.getElementById('m-ok');
+  ok.textContent='Confirmer la suppression';
+  ok.className='m-ok danger';
+  ok.style.display='';
+  ok.onclick=async()=>{
+    const sel=document.getElementById('del-reason-select')?.value;
+    const other=document.getElementById('del-reason-other')?.value.trim();
+    const reason=sel==='Autre'?other:sel;
+    if(!reason){
+      document.getElementById('del-reason-select').style.borderColor='var(--rouge)';
+      showToast('Veuillez indiquer une raison','error');
+      return;
+    }
+    if(sel==='Autre'&&!other){
+      document.getElementById('del-reason-other').style.borderColor='var(--rouge)';
+      showToast('Veuillez préciser la raison','error');
+      return;
+    }
+    showLoader('Suppression…');
+    // Ajouter un commentaire de traçabilité avant suppression
+    await sb.from('commentaires').insert({
+      rdv_id:id,
+      auteur:cuP?.nom||'?',
+      auteur_couleur:cuP?.couleur||'#C8102E',
+      texte:'🗑️ RDV supprimé — Raison : '+reason
+    });
+    await sb.from('rdv').delete().eq('id',id);
+    await reloadRdv();
+    hideLoader();closeModal();
+    switchView(cv);
+    showToast('RDV supprimé — Raison : '+reason);
+  };
+  document.getElementById('m-cancel').style.display='';
+  document.getElementById('modal').classList.add('show');
+}
+
+function toggleDelReason(){
+  const sel=document.getElementById('del-reason-select')?.value;
+  const other=document.getElementById('del-reason-other');
+  if(other) other.style.display=sel==='Autre'?'block':'none';
 }
 
 async function addComment(rdvId){
